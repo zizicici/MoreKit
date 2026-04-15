@@ -34,7 +34,7 @@ public struct GratefulCellConfiguration {
     }
 }
 
-public class GratefulCell: UITableViewCell {
+public class GratefulCell: UITableViewCell, GratefulCellConfigurable {
     private let gradientView = GradientView()
 
     private var topLabel: UILabel = {

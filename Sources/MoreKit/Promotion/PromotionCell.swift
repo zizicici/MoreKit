@@ -43,7 +43,7 @@ public struct PromotionCellConfiguration {
     }
 }
 
-public class PromotionCell: UITableViewCell {
+public class PromotionCell: UITableViewCell, PromotionCellConfigurable {
     public var purchaseClosure: (() -> ())?
     public var restoreClosure: (() -> ())?
 

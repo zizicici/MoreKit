@@ -156,8 +156,8 @@ public class MoreViewController: UIViewController {
         tableView.backgroundColor = MoreKitAppearance.shared.backgroundColor
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuseIdentifier")
         tableView.register(AppCell.self, forCellReuseIdentifier: NSStringFromClass(AppCell.self))
-        tableView.register(PromotionCell.self, forCellReuseIdentifier: NSStringFromClass(PromotionCell.self))
-        tableView.register(GratefulCell.self, forCellReuseIdentifier: NSStringFromClass(GratefulCell.self))
+        tableView.register(configuration.promotionCellClass, forCellReuseIdentifier: "PromotionCell")
+        tableView.register(configuration.gratefulCellClass, forCellReuseIdentifier: "GratefulCell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 50.0
@@ -176,23 +176,23 @@ public class MoreViewController: UIViewController {
 
             switch identifier {
             case .promotion(let price):
-                let cell = tableView.dequeueReusableCell(withIdentifier: NSStringFromClass(PromotionCell.self), for: indexPath)
-                if let cell = cell as? PromotionCell {
-                    cell.update(configuration: configuration.promotionConfig)
-                    cell.update(price: price)
-                    cell.purchaseClosure = { [weak self] in
+                let cell = tableView.dequeueReusableCell(withIdentifier: "PromotionCell", for: indexPath)
+                if let promotionCell = cell as? PromotionCellConfigurable {
+                    promotionCell.update(configuration: configuration.promotionConfig)
+                    promotionCell.update(price: price)
+                    promotionCell.purchaseClosure = { [weak self] in
                         self?.lifetimeAction()
                     }
-                    cell.restoreClosure = { [weak self] in
+                    promotionCell.restoreClosure = { [weak self] in
                         self?.restorePurchases()
                     }
                 }
                 return cell
 
             case .thanks:
-                let cell = tableView.dequeueReusableCell(withIdentifier: NSStringFromClass(GratefulCell.self), for: indexPath)
-                if let cell = cell as? GratefulCell {
-                    cell.update(configuration: configuration.gratefulConfig)
+                let cell = tableView.dequeueReusableCell(withIdentifier: "GratefulCell", for: indexPath)
+                if let gratefulCell = cell as? GratefulCellConfigurable {
+                    gratefulCell.update(configuration: configuration.gratefulConfig)
                 }
                 return cell
 

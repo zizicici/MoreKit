@@ -11,7 +11,9 @@ public struct MoreViewControllerConfiguration {
     public let tabBarImage: UIImage?
 
     // Membership
+    public let promotionCellClass: (UITableViewCell & PromotionCellConfigurable).Type
     public let promotionConfig: PromotionCellConfiguration
+    public let gratefulCellClass: (UITableViewCell & GratefulCellConfigurable).Type
     public let gratefulConfig: GratefulCellConfiguration
 
     // Contact
@@ -30,7 +32,9 @@ public struct MoreViewControllerConfiguration {
     public init(
         title: String,
         tabBarImage: UIImage? = UIImage(systemName: "ellipsis"),
+        promotionCellClass: (UITableViewCell & PromotionCellConfigurable).Type = PromotionCell.self,
         promotionConfig: PromotionCellConfiguration,
+        gratefulCellClass: (UITableViewCell & GratefulCellConfigurable).Type = GratefulCell.self,
         gratefulConfig: GratefulCellConfiguration,
         contactItems: [ContactItemConfiguration],
         appStoreId: String,
@@ -42,7 +46,9 @@ public struct MoreViewControllerConfiguration {
     ) {
         self.title = title
         self.tabBarImage = tabBarImage
+        self.promotionCellClass = promotionCellClass
         self.promotionConfig = promotionConfig
+        self.gratefulCellClass = gratefulCellClass
         self.gratefulConfig = gratefulConfig
         self.contactItems = contactItems
         self.appStoreId = appStoreId
