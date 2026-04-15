@@ -213,6 +213,8 @@ public class MoreViewController: UIViewController {
                 content.text = item.title
                 content.textProperties.color = .label
                 content.secondaryText = item.value
+                content.image = item.image
+                content.imageProperties.tintColor = .label.withAlphaComponent(0.8)
                 cell.contentConfiguration = content
                 return cell
 
