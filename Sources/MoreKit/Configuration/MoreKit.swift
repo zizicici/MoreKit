@@ -17,7 +17,7 @@ public enum MoreKit {
     /// Configure MoreKit. Must be called exactly once per process, before accessing any MoreKit types.
     public static func configure(
         productIDs: [String],
-        appGroupID: String,
+        appGroupID: String? = nil,
         membershipKey: String
     ) {
         assert(!isConfigured, "MoreKit.configure() must only be called once per process.")
@@ -26,7 +26,10 @@ public enum MoreKit {
         self.productIDs = productIDs
         self.appGroupID = appGroupID
         self.membershipKey = membershipKey
-        self.appGroupUserDefaults = UserDefaults(suiteName: appGroupID)
+
+        if let appGroupID {
+            self.appGroupUserDefaults = UserDefaults(suiteName: appGroupID)
+        }
 
         Store.shared.start()
     }
