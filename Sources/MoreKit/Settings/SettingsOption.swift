@@ -31,7 +31,7 @@ extension SettingsOption {
         if type(of: lhs) != type(of: rhs) {
             return false
         } else {
-            return lhs.getName() == rhs.getName()
+            return lhs.hashValue == rhs.hashValue
         }
     }
 }
