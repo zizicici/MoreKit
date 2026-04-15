@@ -17,17 +17,36 @@ public struct MoreViewControllerConfiguration {
     public let gratefulConfig: GratefulCellConfiguration
 
     // Contact
-    public let contactItems: [ContactItemConfiguration]
+    public let email: String
+    public let showContactImages: Bool
 
     // About
     public let appStoreId: String
-    public let eulaURL: String?
+    public let eulaURL: String = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
     public let privacyPolicyURL: String?
     public let specificationsConfig: SpecificationsConfiguration
 
     // AppJun
     public let otherApps: [AppInfo.App]
     public let otherAppsDisplayCount: Int
+
+    var contactItems: [ContactItemConfiguration] {
+        [
+            ContactItemConfiguration(
+                id: "email",
+                title: String(localized: "more.contact.email", bundle: .module),
+                value: email,
+                image: showContactImages ? UIImage(systemName: "envelope.circle") : nil,
+                handler: .email(email)
+            ),
+            ContactItemConfiguration(
+                id: "xiaohongshu",
+                title: String(localized: "more.contact.xiaohongshu", bundle: .module),
+                image: showContactImages ? UIImage(systemName: "book.closed.circle") : nil,
+                handler: .url("https://www.xiaohongshu.com/user/profile/63f05fc5000000001001e524")
+            ),
+        ]
+    }
 
     public init(
         title: String,
@@ -36,9 +55,9 @@ public struct MoreViewControllerConfiguration {
         promotionConfig: PromotionCellConfiguration,
         gratefulCellClass: (UITableViewCell & GratefulCellConfigurable).Type = GratefulCell.self,
         gratefulConfig: GratefulCellConfiguration,
-        contactItems: [ContactItemConfiguration],
+        email: String,
+        showContactImages: Bool = true,
         appStoreId: String,
-        eulaURL: String? = nil,
         privacyPolicyURL: String? = nil,
         specificationsConfig: SpecificationsConfiguration,
         otherApps: [AppInfo.App] = [],
@@ -50,9 +69,9 @@ public struct MoreViewControllerConfiguration {
         self.promotionConfig = promotionConfig
         self.gratefulCellClass = gratefulCellClass
         self.gratefulConfig = gratefulConfig
-        self.contactItems = contactItems
+        self.email = email
+        self.showContactImages = showContactImages
         self.appStoreId = appStoreId
-        self.eulaURL = eulaURL
         self.privacyPolicyURL = privacyPolicyURL
         self.specificationsConfig = specificationsConfig
         self.otherApps = otherApps
@@ -60,19 +79,19 @@ public struct MoreViewControllerConfiguration {
     }
 }
 
-public struct ContactItemConfiguration: Hashable {
-    public let id: String
-    public let title: String
-    public let value: String?
-    public let image: UIImage?
-    public let handler: ContactHandler
+struct ContactItemConfiguration: Hashable {
+    let id: String
+    let title: String
+    let value: String?
+    let image: UIImage?
+    let handler: ContactHandler
 
-    public enum ContactHandler: Hashable {
+    enum ContactHandler: Hashable {
         case email(String)
         case url(String)
     }
 
-    public init(
+    init(
         id: String,
         title: String,
         value: String? = nil,

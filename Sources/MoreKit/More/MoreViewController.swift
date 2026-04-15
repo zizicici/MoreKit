@@ -16,6 +16,7 @@ public class MoreViewController: UIViewController {
 
     private var tableView: UITableView!
     private var diffableDataSource: DiffableDataSource!
+    private var isAppOnStore: Bool = false
 
     // MARK: - Section / Item
 
@@ -136,6 +137,8 @@ public class MoreViewController: UIViewController {
         if Store.shared.membershipDisplayPrice() == nil {
             Store.shared.retryRequestProducts()
         }
+
+        checkAppStoreAvailability()
 
         NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .SettingsUpdate, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreInfoLoaded, object: nil)
@@ -297,10 +300,11 @@ public class MoreViewController: UIViewController {
 
             case .about:
                 snapshot.appendSections([.about])
-                var aboutItems: [Item] = [.aboutSpecifications, .aboutShare, .aboutReview]
-                if configuration.eulaURL != nil {
-                    aboutItems.append(.aboutEULA)
+                var aboutItems: [Item] = [.aboutSpecifications]
+                if isAppOnStore {
+                    aboutItems.append(contentsOf: [.aboutShare, .aboutReview])
                 }
+                aboutItems.append(.aboutEULA)
                 if configuration.privacyPolicyURL != nil {
                     aboutItems.append(.aboutPrivacyPolicy)
                 }
@@ -427,7 +431,7 @@ extension MoreViewController {
     }
 
     func openEULA() {
-        if let urlString = configuration.eulaURL, let url = URL(string: urlString) {
+        if let url = URL(string: configuration.eulaURL) {
             openSF(with: url)
         }
     }
@@ -463,6 +467,20 @@ extension MoreViewController {
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:])
         }
+    }
+
+    func checkAppStoreAvailability() {
+        guard let url = URL(string: "https://itunes.apple.com/lookup?id=\(configuration.appStoreId)") else { return }
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let count = json["resultCount"] as? Int,
+                  count > 0 else { return }
+            DispatchQueue.main.async {
+                self?.isAppOnStore = true
+                self?.reloadData()
+            }
+        }.resume()
     }
 }
 
