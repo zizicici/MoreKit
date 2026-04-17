@@ -169,7 +169,7 @@ public class MoreViewController: UIViewController {
         tableView.snp.makeConstraints { make in
             make.edges.equalTo(view)
         }
-        tableView.contentInset = UIEdgeInsets(top: 20, left: 0, bottom: 0, right: 0)
+        tableView.contentInset = .zero
     }
 
     func configureDataSource() {

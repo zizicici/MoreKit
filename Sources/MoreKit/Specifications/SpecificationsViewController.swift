@@ -147,7 +147,7 @@ public class SpecificationsViewController: UIViewController {
 
     func configureHierarchy() {
         tableView = UITableView(frame: .zero, style: .insetGrouped)
-        tableView.backgroundColor = .secondarySystemBackground
+        tableView.backgroundColor = MoreKitAppearance.shared.backgroundColor
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuseIdentifier")
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.rowHeight = UITableView.automaticDimension
