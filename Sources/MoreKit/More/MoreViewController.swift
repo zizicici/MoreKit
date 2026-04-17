@@ -132,6 +132,15 @@ public class MoreViewController: UIViewController {
 
         configureHierarchy()
         configureDataSource()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .SettingsUpdate, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreInfoLoaded, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreProductsLoaded, object: nil)
+
+        for name in dataSource?.additionalReloadNotifications() ?? [] {
+            NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: name, object: nil)
+        }
+
         reloadData()
 
         if Store.shared.membershipDisplayPrice() == nil {
@@ -139,13 +148,6 @@ public class MoreViewController: UIViewController {
         }
 
         checkAppStoreAvailability()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .SettingsUpdate, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreInfoLoaded, object: nil)
-
-        for name in dataSource?.additionalReloadNotifications() ?? [] {
-            NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: name, object: nil)
-        }
     }
 
     override public var preferredStatusBarStyle: UIStatusBarStyle {
@@ -263,6 +265,7 @@ public class MoreViewController: UIViewController {
         for sectionType in sectionTypes {
             switch sectionType {
             case .membership:
+                guard MoreKit.productID != nil else { continue }
                 snapshot.appendSections([.membership])
                 switch User.shared.proTier() {
                 case .lifetime:
@@ -390,7 +393,11 @@ extension MoreViewController {
     func restorePurchases() {
         Task {
             showOverlayViewController()
-            await Store.shared.sync()
+            do {
+                try await Store.shared.sync()
+            } catch {
+                showAlert(title: String(localized: "store.orderFailure", bundle: .module), message: error.localizedDescription)
+            }
             hideOverlayViewController()
         }
     }

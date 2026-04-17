@@ -9,10 +9,23 @@ import StoreKit
 extension Notification.Name {
     public static let LifetimeMembership = Notification.Name(rawValue: "com.zizicici.morekit.store.purchase.lifetime")
     public static let StoreInfoLoaded = Notification.Name(rawValue: "com.zizicici.morekit.store.info.loaded")
+    public static let StoreProductsLoaded = Notification.Name(rawValue: "com.zizicici.morekit.store.products.loaded")
 }
 
 public enum StoreError: Error {
     case failedVerification
+    case productsUnavailable
+}
+
+extension StoreError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .failedVerification:
+            return String(localized: "store.error.failedVerification", bundle: .module)
+        case .productsUnavailable:
+            return String(localized: "store.error.productsUnavailable", bundle: .module)
+        }
+    }
 }
 
 public enum ProTier {
@@ -20,62 +33,56 @@ public enum ProTier {
     case none
 }
 
+@MainActor
 public class Store: ObservableObject {
     public static let shared = Store()
 
-    @Published public private(set) var memberships: [Product]
+    @Published public private(set) var memberships: [Product] = []
 
-    @Published public private(set) var purchasedMemberships: [Product] = [] {
+    @Published public private(set) var purchasedProductIDs: Set<String> = [] {
         didSet {
-            if purchasedMemberships.count > 0 {
-                NotificationCenter.default.post(name: Notification.Name.LifetimeMembership, object: nil)
+            if oldValue.isEmpty && !purchasedProductIDs.isEmpty {
+                NotificationCenter.default.post(name: .LifetimeMembership, object: nil)
             }
         }
     }
 
-    private var updateListenerTask: Task<Void, Error>? = nil
-    public private(set) var needRetry = false
-
-    init() {
-        memberships = []
+    public var purchasedMemberships: [Product] {
+        memberships.filter { purchasedProductIDs.contains($0.id) }
     }
 
-    /// Called internally after MoreKit.configure() sets up productIDs
+    private var updateListenerTask: Task<Void, Error>? = nil
+
+    nonisolated init() {}
+
     internal func start() {
         guard updateListenerTask == nil else { return }
         updateListenerTask = listenForTransactions()
-        Task {
-            await requestProducts()
-            await updateCustomerProductStatus()
-        }
-    }
-
-    deinit {
-        updateListenerTask?.cancel()
+        Task { await updateCustomerProductStatus() }
+        Task { await requestProducts() }
     }
 
     public func retryRequestProducts() {
-        Task {
-            await requestProducts()
-            await updateCustomerProductStatus()
-        }
+        Task { await requestProducts() }
     }
 
-    func listenForTransactions() -> Task<Void, Error> {
+    nonisolated func listenForTransactions() -> Task<Void, Error> {
         return Task.detached {
             for await result in Transaction.updates {
                 do {
-                    let transaction = try self.checkVerified(result)
+                    let transaction = try Self.checkVerified(result)
                     await self.updateCustomerProductStatus()
                     await transaction.finish()
                 } catch {
-                    print("Transaction failed verification")
+                    // Unverified transactions are intentionally not finished per Apple's guidance;
+                    // StoreKit may re-deliver them across launches until they verify or are cleared.
+                    print("Transaction failed verification (not finished): \(error)")
                 }
             }
         }
     }
 
-    func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    nonisolated static func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified:
             throw StoreError.failedVerification
@@ -84,97 +91,72 @@ public class Store: ObservableObject {
         }
     }
 
-    @MainActor
     func requestProducts() async {
-        let productIDs = MoreKit.productIDs
-        guard !productIDs.isEmpty else { return }
+        guard let productID = MoreKit.productID else { return }
 
         do {
-            let products = try await Product.products(for: productIDs)
-
-            for product in products {
-                switch product.type {
-                case .nonConsumable:
-                    memberships.append(product)
-                default:
-                    break
-                }
+            let products = try await Product.products(for: [productID])
+            let filtered = products.filter { $0.type == .nonConsumable }
+            if memberships != filtered {
+                memberships = filtered
+                NotificationCenter.default.post(name: .StoreProductsLoaded, object: nil)
             }
-
-            if memberships.count == 0 {
-                needRetry = true
-            }
-        }
-        catch {
-            if let error = error as? StoreKit.StoreKitError {
-                switch error {
-                case .networkError:
-                    needRetry = true
-                default:
-                    break
-                }
-            }
+        } catch {
             print(error)
         }
     }
 
-    public func purchase(_ product: Product) async throws -> Transaction? {
+    internal func purchase(_ product: Product) async throws -> Transaction? {
         let result = try await product.purchase()
 
         switch result {
         case .success(let verification):
-            let transaction = try checkVerified(verification)
+            let transaction = try Self.checkVerified(verification)
             await updateCustomerProductStatus()
             await transaction.finish()
             return transaction
         case .userCancelled, .pending:
             return nil
-        default:
+        @unknown default:
             return nil
         }
     }
 
-    @MainActor
     public func updateCustomerProductStatus() async {
-        var purchasedMemberships: [Product] = []
+        guard let registeredID = MoreKit.productID else { return }
 
+        var entitledIDs: Set<String> = []
         for await result in Transaction.currentEntitlements {
             do {
-                let transaction = try checkVerified(result)
-                switch transaction.productType {
-                case .nonConsumable:
-                    if let membership = memberships.first(where: { $0.id == transaction.productID }) {
-                        purchasedMemberships.append(membership)
-                    }
-                    break
-                default:
-                    break
-                }
-            }
-            catch {
+                let transaction = try Self.checkVerified(result)
+                guard transaction.productType == .nonConsumable else { continue }
+                guard transaction.productID == registeredID else { continue }
+                entitledIDs.insert(transaction.productID)
+            } catch {
                 print(error)
             }
         }
-        self.purchasedMemberships = purchasedMemberships
+        if purchasedProductIDs != entitledIDs {
+            purchasedProductIDs = entitledIDs
+        }
 
-        NotificationCenter.default.post(name: NSNotification.Name.StoreInfoLoaded, object: nil)
+        NotificationCenter.default.post(name: .StoreInfoLoaded, object: nil)
     }
 }
 
 extension Store {
     public func purchaseLifetimeMembership() async throws -> Transaction? {
-        guard purchasedMemberships.count == 0 else {
+        guard purchasedProductIDs.isEmpty else {
             return nil
         }
-        if let membership = memberships.first {
-            return try await purchase(membership)
-        } else {
-            return nil
+        guard let membership = memberships.first else {
+            throw StoreError.productsUnavailable
         }
+        return try await purchase(membership)
     }
 
     public func hasValidMembership() -> Bool {
-        return !purchasedMemberships.isEmpty
+        return !purchasedProductIDs.isEmpty
     }
 
     public func proTier() -> ProTier {
@@ -185,9 +167,17 @@ extension Store {
         }
     }
 
-    public func sync() async {
-        try? await AppStore.sync()
+    public func sync() async throws {
+        var syncError: Error?
+        do {
+            try await AppStore.sync()
+        } catch {
+            syncError = error
+        }
         await updateCustomerProductStatus()
+        if let syncError {
+            throw syncError
+        }
     }
 
     public func membershipDisplayPrice() -> String? {

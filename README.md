@@ -27,9 +27,9 @@ Call `configure()` once at app launch (e.g. in `AppDelegate`):
 import MoreKit
 
 MoreKit.configure(
-    productIDs: ["com.example.lifetime"],
+    productID: "com.example.lifetime",  // optional
     appGroupID: "group.com.example.app",  // optional
-    membershipKey: "com.example.Store.LifetimeMembership"
+    membershipKey: "com.example.Store.LifetimeMembership"  // optional
 )
 ```
 

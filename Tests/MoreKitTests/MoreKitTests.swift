@@ -4,10 +4,11 @@ import UIKit
 
 @Suite("MoreKit Configuration Tests")
 struct MoreKitConfigTests {
-    @Test("Configure sets productIDs and appGroupID")
+    @Test("Configure sets productID and appGroupID")
+    @MainActor
     func testConfigure() {
-        MoreKit.configure(productIDs: ["com.test.pro"], appGroupID: "group.com.test")
-        #expect(MoreKit.productIDs == ["com.test.pro"])
+        MoreKit.configure(productID: "com.test.pro", appGroupID: "group.com.test")
+        #expect(MoreKit.productID == "com.test.pro")
         #expect(MoreKit.appGroupID == "group.com.test")
     }
 }

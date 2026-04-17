@@ -5,26 +5,36 @@
 
 import Foundation
 
+@MainActor
 public class User {
     public static let shared = User()
 
-    private var membershipUserDefaults: UserDefaults {
-        MoreKit.appGroupUserDefaults ?? .standard
+    /// Returns the UserDefaults instance used for caching membership state.
+    /// - If `appGroupID` was configured, returns the app-group suite — or nil if opening it failed,
+    ///   so we do not silently fall back to `.standard` and pollute it with shared-cache keys.
+    /// - If `appGroupID` was not configured, returns `.standard` as the intended local store.
+    private var membershipUserDefaults: UserDefaults? {
+        if MoreKit.appGroupID != nil {
+            return MoreKit.appGroupUserDefaults
+        }
+        return .standard
     }
 
-    init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(lifetimeMembershipDidRegisted), name: Notification.Name.LifetimeMembership, object: nil)
+    nonisolated init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(syncMembershipCache), name: .StoreInfoLoaded, object: nil)
     }
 
     @objc
-    private func lifetimeMembershipDidRegisted() {
-        membershipUserDefaults.setValue(true, forKey: MoreKit.membershipKey)
-        membershipUserDefaults.synchronize()
+    private func syncMembershipCache() {
+        guard let defaults = membershipUserDefaults else { return }
+        let current = Store.shared.hasValidMembership()
+        if defaults.bool(forKey: MoreKit.membershipKey) != current {
+            defaults.setValue(current, forKey: MoreKit.membershipKey)
+        }
     }
 
     public func proTier() -> ProTier {
-        let cached = membershipUserDefaults.bool(forKey: MoreKit.membershipKey)
-        if cached {
+        if membershipUserDefaults?.bool(forKey: MoreKit.membershipKey) == true {
             return .lifetime
         }
         return Store.shared.proTier()
