@@ -3,7 +3,7 @@
 //  MoreKit
 //
 
-import Foundation
+import UIKit
 
 public struct MoreCustomSection: Hashable {
     public let id: String
@@ -28,11 +28,18 @@ public struct MoreCustomItem: Hashable {
     public let id: String
     public let title: String
     public let value: String?
+    public let badge: MoreBadgeStyle?
 
-    public init(id: String, title: String, value: String? = nil) {
+    public init(
+        id: String,
+        title: String,
+        value: String? = nil,
+        badge: MoreBadgeStyle? = nil
+    ) {
         self.id = id
         self.title = title
         self.value = value
+        self.badge = badge
     }
 }
 

@@ -160,6 +160,7 @@ public class MoreViewController: UIViewController {
         tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = MoreKitAppearance.shared.backgroundColor
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuseIdentifier")
+        tableView.register(MoreCustomBadgeCell.self, forCellReuseIdentifier: MoreCustomBadgeCell.reuseIdentifier)
         tableView.register(AppCell.self, forCellReuseIdentifier: NSStringFromClass(AppCell.self))
         tableView.register(configuration.promotionCellClass, forCellReuseIdentifier: "PromotionCell")
         tableView.register(configuration.gratefulCellClass, forCellReuseIdentifier: "GratefulCell")
@@ -202,6 +203,11 @@ public class MoreViewController: UIViewController {
                 return cell
 
             case .custom(let item):
+                if item.badge != nil {
+                    let cell = tableView.dequeueReusableCell(withIdentifier: MoreCustomBadgeCell.reuseIdentifier, for: indexPath) as! MoreCustomBadgeCell
+                    cell.configure(item: item)
+                    return cell
+                }
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
                 cell.accessoryType = .disclosureIndicator
                 var content = UIListContentConfiguration.valueCell()
