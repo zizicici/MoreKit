@@ -28,14 +28,43 @@ extension StoreError: LocalizedError {
     }
 }
 
-public enum ProTier {
+public enum ProTier: Sendable {
     case lifetime
     case none
 }
 
+private final class StoreStateSnapshot: @unchecked Sendable {
+    private let lock = NSLock()
+    private var hasValidMembership = false
+    private var membershipDisplayPrice: String?
+
+    func update(hasValidMembership: Bool, membershipDisplayPrice: String?) {
+        lock.lock()
+        self.hasValidMembership = hasValidMembership
+        self.membershipDisplayPrice = membershipDisplayPrice
+        lock.unlock()
+    }
+
+    func hasValidMembershipValue() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return hasValidMembership
+    }
+
+    func membershipDisplayPriceValue() -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return membershipDisplayPrice
+    }
+
+    func proTierValue() -> ProTier {
+        hasValidMembershipValue() ? .lifetime : .none
+    }
+}
+
 @MainActor
 public class Store: ObservableObject {
-    public static let shared = Store()
+    public nonisolated static let shared = Store()
 
     @Published public private(set) var memberships: [Product] = []
 
@@ -52,11 +81,20 @@ public class Store: ObservableObject {
     }
 
     private var updateListenerTask: Task<Void, Error>? = nil
+    private nonisolated let snapshot = StoreStateSnapshot()
 
     nonisolated init() {}
 
+    private func refreshSnapshot() {
+        snapshot.update(
+            hasValidMembership: !purchasedProductIDs.isEmpty,
+            membershipDisplayPrice: memberships.first?.displayPrice
+        )
+    }
+
     internal func start() {
         guard updateListenerTask == nil else { return }
+        refreshSnapshot()
         updateListenerTask = listenForTransactions()
         Task { await updateCustomerProductStatus() }
         Task { await requestProducts() }
@@ -99,7 +137,10 @@ public class Store: ObservableObject {
             let filtered = products.filter { $0.type == .nonConsumable }
             if memberships != filtered {
                 memberships = filtered
+                refreshSnapshot()
                 NotificationCenter.default.post(name: .StoreProductsLoaded, object: nil)
+            } else {
+                refreshSnapshot()
             }
         } catch {
             print(error)
@@ -139,6 +180,7 @@ public class Store: ObservableObject {
         if purchasedProductIDs != entitledIDs {
             purchasedProductIDs = entitledIDs
         }
+        refreshSnapshot()
 
         NotificationCenter.default.post(name: .StoreInfoLoaded, object: nil)
     }
@@ -155,16 +197,12 @@ extension Store {
         return try await purchase(membership)
     }
 
-    public func hasValidMembership() -> Bool {
-        return !purchasedProductIDs.isEmpty
+    public nonisolated func hasValidMembership() -> Bool {
+        return snapshot.hasValidMembershipValue()
     }
 
-    public func proTier() -> ProTier {
-        if hasValidMembership() {
-            return .lifetime
-        } else {
-            return .none
-        }
+    public nonisolated func proTier() -> ProTier {
+        return snapshot.proTierValue()
     }
 
     public func sync() async throws {
@@ -180,7 +218,7 @@ extension Store {
         }
     }
 
-    public func membershipDisplayPrice() -> String? {
-        return memberships.first?.displayPrice
+    public nonisolated func membershipDisplayPrice() -> String? {
+        return snapshot.membershipDisplayPriceValue()
     }
 }

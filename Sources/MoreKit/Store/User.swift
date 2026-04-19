@@ -5,7 +5,6 @@
 
 import Foundation
 
-@MainActor
 public class User {
     public static let shared = User()
 
@@ -20,7 +19,7 @@ public class User {
         return .standard
     }
 
-    nonisolated init() {
+    init() {
         NotificationCenter.default.addObserver(self, selector: #selector(syncMembershipCache), name: .StoreInfoLoaded, object: nil)
     }
 
