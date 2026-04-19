@@ -4,7 +4,7 @@ A Swift package for building a fully-featured "More" tab in iOS apps, with built
 
 ## Requirements
 
-- iOS 17.0+
+- iOS 15.0+
 - Swift 5.10+
 
 ## Installation
@@ -13,7 +13,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "1.3.0")
+    .package(url: "https://github.com/user/MoreKit.git", from: "1.6.1")
 ]
 ```
 
