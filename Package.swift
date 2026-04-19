@@ -16,12 +16,11 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/SnapKit/SnapKit", .upToNextMajor(from: "5.7.0")),
-        .package(url: "https://github.com/zizicici/AppInfo", .upToNextMajor(from: "1.3.0")),
     ],
     targets: [
         .target(
             name: "MoreKit",
-            dependencies: ["SnapKit", "AppInfo"],
+            dependencies: ["SnapKit"],
             resources: [.process("Resources")]
         ),
         .testTarget(

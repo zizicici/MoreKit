@@ -77,10 +77,19 @@ let moreVC = MoreViewController(configuration: config)
 | `appStoreId` | `String` | Required | App Store ID for share/review |
 | `privacyPolicyURL` | `String?` | `nil` | Privacy policy URL |
 | `specificationsConfig` | `SpecificationsConfiguration` | Required | Specifications page content |
-| `otherApps` | `[AppInfo.App]` | `[]` | Other apps to showcase |
-| `otherAppsDisplayCount` | `Int` | `3` | Max apps shown per load |
+| `appShowcase` | `AppShowcaseConfiguration` | `AppShowcaseConfiguration()` | App showcase section configuration |
 
 The EULA link uses the [Apple Standard EULA](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/) by default and is always displayed. Share and Review entries are automatically shown only when the app is live on the App Store.
+
+`AppShowcaseConfiguration` centralizes what used to be `otherApps` and `otherAppsDisplayCount`, and also lets you override or disable the developer-page entry:
+
+```swift
+appShowcase: AppShowcaseConfiguration(
+    apps: [.lemon, .coconut, .tagDay],
+    displayCount: 2,
+    developerPageURL: AppInfo.Developer.pageURL
+)
+```
 
 ### Appearance
 
@@ -154,7 +163,7 @@ enum ThemeSetting: String, UserDefaultSettable {
 |---|---|
 | **Membership** | Promotion cell (with purchase/restore) or grateful cell based on membership status |
 | **Contact** | Email and Xiaohongshu links |
-| **AppJun** | Showcase other apps with in-app Store pages |
+| **App Showcase** | Showcase other apps with in-app Store pages |
 | **About** | Specifications, Share, Review, EULA, Privacy Policy |
 
 ## Localization

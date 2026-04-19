@@ -4,7 +4,6 @@
 //
 
 import UIKit
-import AppInfo
 
 public struct MoreViewControllerConfiguration {
     public let title: String
@@ -26,9 +25,18 @@ public struct MoreViewControllerConfiguration {
     public let privacyPolicyURL: String?
     public let specificationsConfig: SpecificationsConfiguration
 
-    // AppJun
-    public let otherApps: [AppInfo.App]
-    public let otherAppsDisplayCount: Int
+    // App Showcase
+    public let appShowcase: AppShowcaseConfiguration
+
+    @available(*, deprecated, message: "Use appShowcase.apps instead.")
+    public var otherApps: [AppInfo.App] {
+        appShowcase.apps
+    }
+
+    @available(*, deprecated, message: "Use appShowcase.displayCount instead.")
+    public var otherAppsDisplayCount: Int {
+        appShowcase.displayCount
+    }
 
     var contactItems: [ContactItemConfiguration] {
         [
@@ -60,6 +68,7 @@ public struct MoreViewControllerConfiguration {
         appStoreId: String,
         privacyPolicyURL: String? = nil,
         specificationsConfig: SpecificationsConfiguration,
+        appShowcase: AppShowcaseConfiguration? = nil,
         otherApps: [AppInfo.App] = [],
         otherAppsDisplayCount: Int = 3
     ) {
@@ -74,8 +83,10 @@ public struct MoreViewControllerConfiguration {
         self.appStoreId = appStoreId
         self.privacyPolicyURL = privacyPolicyURL
         self.specificationsConfig = specificationsConfig
-        self.otherApps = otherApps
-        self.otherAppsDisplayCount = otherAppsDisplayCount
+        self.appShowcase = appShowcase ?? AppShowcaseConfiguration(
+            apps: otherApps,
+            displayCount: otherAppsDisplayCount
+        )
     }
 }
 

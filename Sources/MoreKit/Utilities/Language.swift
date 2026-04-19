@@ -6,7 +6,7 @@
 import Foundation
 
 public struct Language {
-    public enum LanguageType {
+    public enum LanguageType: Equatable {
         case zh
         case en
         case ja

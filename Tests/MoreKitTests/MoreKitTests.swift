@@ -127,6 +127,52 @@ struct SpecificationsConfigurationTests {
     }
 }
 
+@Suite("AppShowcaseConfiguration Tests")
+struct AppShowcaseConfigurationTests {
+    @Test("Chinese locale injects festivals app once")
+    func testResolvedAppsForChineseLocale() {
+        let configuration = AppShowcaseConfiguration(apps: [.lemon, .festivals])
+        let resolved = configuration.resolvedApps(for: .zh)
+
+        #expect(resolved.filter { $0 == .festivals }.count == 1)
+        #expect(resolved.contains(.lemon))
+    }
+
+    @Test("Non-Chinese locale does not inject festivals app")
+    func testResolvedAppsForNonChineseLocale() {
+        let configuration = AppShowcaseConfiguration(apps: [.lemon], automaticallyIncludesFestivalsForChineseLocales: true)
+        let resolved = configuration.resolvedApps(for: .en)
+
+        #expect(resolved == [.lemon])
+    }
+
+    @Test("Legacy showcase parameters bridge into appShowcase")
+    func testLegacyConfigurationBridge() {
+        let configuration = MoreViewControllerConfiguration(
+            title: "More",
+            promotionConfig: PromotionCellConfiguration(
+                title: "Upgrade",
+                features: ["Feature"]
+            ),
+            gratefulConfig: GratefulCellConfiguration(
+                title: "Thanks",
+                content: "Unlocked"
+            ),
+            email: "support@example.com",
+            appStoreId: "123456789",
+            specificationsConfig: SpecificationsConfiguration(
+                summaryItems: [],
+                thirdPartyLibraries: []
+            ),
+            otherApps: [.lemon],
+            otherAppsDisplayCount: 2
+        )
+
+        #expect(configuration.appShowcase.apps == [.lemon])
+        #expect(configuration.appShowcase.displayCount == 2)
+    }
+}
+
 @Suite("PromotionCellConfiguration Tests")
 struct PromotionCellConfigurationTests {
     @Test("Default values")

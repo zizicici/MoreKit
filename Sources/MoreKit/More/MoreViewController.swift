@@ -7,7 +7,6 @@ import UIKit
 import SnapKit
 import SafariServices
 import StoreKit
-import AppInfo
 
 public class MoreViewController: UIViewController {
 
@@ -24,7 +23,7 @@ public class MoreViewController: UIViewController {
         case membership
         case custom(String)
         case contact
-        case appjun
+        case showcase
         case about
 
         var header: String? {
@@ -35,7 +34,7 @@ public class MoreViewController: UIViewController {
                 return nil // set via sectionHeaders dict
             case .contact:
                 return String(localized: "more.contact", bundle: .module)
-            case .appjun:
+            case .showcase:
                 return String(localized: "more.appjun", bundle: .module)
             case .about:
                 return String(localized: "more.about", bundle: .module)
@@ -48,8 +47,8 @@ public class MoreViewController: UIViewController {
         case thanks
         case custom(MoreCustomItem)
         case contact(ContactItemConfiguration)
-        case appjunApp(AppInfo.App)
-        case appjunMore
+        case showcaseApp(AppInfo.App)
+        case showcaseMore
         case aboutSpecifications
         case aboutShare
         case aboutReview
@@ -64,9 +63,9 @@ public class MoreViewController: UIViewController {
                 return item.title
             case .contact(let item):
                 return item.title
-            case .appjunApp:
+            case .showcaseApp:
                 return ""
-            case .appjunMore:
+            case .showcaseMore:
                 return String(localized: "more.appjun.explore", bundle: .module)
             case .aboutSpecifications:
                 return String(localized: "more.about.specifications", bundle: .module)
@@ -161,7 +160,7 @@ public class MoreViewController: UIViewController {
         tableView.backgroundColor = MoreKitAppearance.shared.backgroundColor
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuseIdentifier")
         tableView.register(MoreCustomBadgeCell.self, forCellReuseIdentifier: MoreCustomBadgeCell.reuseIdentifier)
-        tableView.register(AppCell.self, forCellReuseIdentifier: NSStringFromClass(AppCell.self))
+        tableView.register(AppInfo.AppCell.self, forCellReuseIdentifier: NSStringFromClass(AppInfo.AppCell.self))
         tableView.register(configuration.promotionCellClass, forCellReuseIdentifier: "PromotionCell")
         tableView.register(configuration.gratefulCellClass, forCellReuseIdentifier: "GratefulCell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -229,15 +228,15 @@ public class MoreViewController: UIViewController {
                 cell.contentConfiguration = content
                 return cell
 
-            case .appjunApp(let app):
-                let cell = tableView.dequeueReusableCell(withIdentifier: NSStringFromClass(AppCell.self), for: indexPath)
-                if let cell = cell as? AppCell {
+            case .showcaseApp(let app):
+                let cell = tableView.dequeueReusableCell(withIdentifier: NSStringFromClass(AppInfo.AppCell.self), for: indexPath)
+                if let cell = cell as? AppInfo.AppCell {
                     cell.update(app)
                 }
                 cell.accessoryType = .disclosureIndicator
                 return cell
 
-            case .appjunMore:
+            case .showcaseMore:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
                 cell.accessoryType = .disclosureIndicator
                 var content = UIListContentConfiguration.valueCell()
@@ -271,53 +270,19 @@ public class MoreViewController: UIViewController {
         for sectionType in sectionTypes {
             switch sectionType {
             case .membership:
-                guard MoreKit.productID != nil else { continue }
-                snapshot.appendSections([.membership])
-                switch User.shared.proTier() {
-                case .lifetime:
-                    snapshot.appendItems([.thanks], toSection: .membership)
-                case .none:
-                    snapshot.appendItems([.promotion(Store.shared.membershipDisplayPrice() ?? "?.??")], toSection: .membership)
-                }
+                appendMembershipSection(to: &snapshot)
 
             case .custom(let section):
-                guard !section.items.isEmpty else { continue }
-                let sectionId = Section.custom(section.id)
-                snapshot.appendSections([sectionId])
-                headers[sectionId] = section.header
-                footers[sectionId] = section.footer
-                snapshot.appendItems(section.items.map { .custom($0) }, toSection: sectionId)
+                appendCustomSection(section, to: &snapshot, headers: &headers, footers: &footers)
 
             case .contact:
-                guard !configuration.contactItems.isEmpty else { continue }
-                snapshot.appendSections([.contact])
-                snapshot.appendItems(configuration.contactItems.map { .contact($0) }, toSection: .contact)
+                appendContactSection(to: &snapshot)
 
             case .appjun:
-                var appItems: [Item] = []
-                var apps = configuration.otherApps
-                if Language.type() == .zh {
-                    if !apps.contains(.festivals) {
-                        apps.append(.festivals)
-                    }
-                }
-                appItems.append(contentsOf: apps.randomElements(configuration.otherAppsDisplayCount).map { .appjunApp($0) })
-                appItems.append(.appjunMore)
-                guard !appItems.isEmpty else { continue }
-                snapshot.appendSections([.appjun])
-                snapshot.appendItems(appItems, toSection: .appjun)
+                appendShowcaseSection(to: &snapshot)
 
             case .about:
-                snapshot.appendSections([.about])
-                var aboutItems: [Item] = [.aboutSpecifications]
-                if isAppOnStore {
-                    aboutItems.append(contentsOf: [.aboutShare, .aboutReview])
-                }
-                aboutItems.append(.aboutEULA)
-                if configuration.privacyPolicyURL != nil {
-                    aboutItems.append(.aboutPrivacyPolicy)
-                }
-                snapshot.appendItems(aboutItems, toSection: .about)
+                appendAboutSection(to: &snapshot)
             }
         }
 
@@ -345,6 +310,68 @@ public class MoreViewController: UIViewController {
         viewController.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(viewController, animated: animated ? ConsideringUser.pushAnimated : false)
     }
+
+    func appendMembershipSection(to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>) {
+        guard MoreKit.productID != nil else { return }
+
+        snapshot.appendSections([.membership])
+        switch User.shared.proTier() {
+        case .lifetime:
+            snapshot.appendItems([.thanks], toSection: .membership)
+        case .none:
+            snapshot.appendItems([.promotion(Store.shared.membershipDisplayPrice() ?? "?.??")], toSection: .membership)
+        }
+    }
+
+    func appendCustomSection(
+        _ section: MoreCustomSection,
+        to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>,
+        headers: inout [Section: String?],
+        footers: inout [Section: String?]
+    ) {
+        guard !section.items.isEmpty else { return }
+
+        let sectionID = Section.custom(section.id)
+        snapshot.appendSections([sectionID])
+        headers[sectionID] = section.header
+        footers[sectionID] = section.footer
+        snapshot.appendItems(section.items.map { .custom($0) }, toSection: sectionID)
+    }
+
+    func appendContactSection(to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>) {
+        guard !configuration.contactItems.isEmpty else { return }
+
+        snapshot.appendSections([.contact])
+        snapshot.appendItems(configuration.contactItems.map { .contact($0) }, toSection: .contact)
+    }
+
+    func appendShowcaseSection(to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>) {
+        let showcase = configuration.appShowcase
+        let language = Language.type()
+        var items = showcase.displayedApps(for: language).map { Item.showcaseApp($0) }
+        if showcase.showsDeveloperPageEntry {
+            items.append(.showcaseMore)
+        }
+        guard !items.isEmpty else { return }
+
+        snapshot.appendSections([.showcase])
+        snapshot.appendItems(items, toSection: .showcase)
+    }
+
+    func appendAboutSection(to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>) {
+        snapshot.appendSections([.about])
+
+        var items: [Item] = [.aboutSpecifications]
+        if isAppOnStore {
+            items.append(contentsOf: [.aboutShare, .aboutReview])
+        }
+        items.append(.aboutEULA)
+        if configuration.privacyPolicyURL != nil {
+            items.append(.aboutPrivacyPolicy)
+        }
+
+        snapshot.appendItems(items, toSection: .about)
+    }
 }
 
 // MARK: - UITableViewDelegate
@@ -361,10 +388,10 @@ extension MoreViewController: UITableViewDelegate {
             dataSource?.moreViewController(self, didSelectCustomItem: customItem)
         case .contact(let contactItem):
             handleContact(contactItem)
-        case .appjunApp(let app):
+        case .showcaseApp(let app):
             openStorePage(for: app)
-        case .appjunMore:
-            openStoreDeveloperPage()
+        case .showcaseMore:
+            openShowcaseDeveloperPage()
         case .aboutSpecifications:
             enterSpecifications()
         case .aboutShare:
@@ -455,7 +482,7 @@ extension MoreViewController {
         }
     }
 
-    func openStorePage(for app: App) {
+    func openStorePage(for app: AppInfo.App) {
         let storeVC = SKStoreProductViewController()
         storeVC.delegate = self
         let parameters = [SKStoreProductParameterITunesItemIdentifier: app.storeId]
@@ -468,15 +495,16 @@ extension MoreViewController {
         }
     }
 
-    func jumpToAppStorePage(for app: App) {
+    func jumpToAppStorePage(for app: AppInfo.App) {
         guard let url = URL(string: "itms-apps://itunes.apple.com/app/" + app.storeId) else { return }
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:])
         }
     }
 
-    func openStoreDeveloperPage() {
-        guard let url = URL(string: AppInfo.Developer.pageURL) else { return }
+    func openShowcaseDeveloperPage() {
+        guard let urlString = configuration.appShowcase.developerPageURL,
+              let url = URL(string: urlString) else { return }
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:])
         }
