@@ -182,8 +182,9 @@ public class MoreViewController: UIViewController {
             switch identifier {
             case .promotion(let price):
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PromotionCell", for: indexPath)
-                if let promotionCell = cell as? PromotionCellConfigurable {
-                    promotionCell.update(configuration: configuration.promotionConfig)
+                if let promotionConfig = configuration.promotionConfig,
+                   let promotionCell = cell as? PromotionCellConfigurable {
+                    promotionCell.update(configuration: promotionConfig)
                     promotionCell.update(price: price)
                     promotionCell.purchaseClosure = { [weak self] in
                         self?.lifetimeAction()
@@ -196,8 +197,9 @@ public class MoreViewController: UIViewController {
 
             case .thanks:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "GratefulCell", for: indexPath)
-                if let gratefulCell = cell as? GratefulCellConfigurable {
-                    gratefulCell.update(configuration: configuration.gratefulConfig)
+                if let gratefulConfig = configuration.gratefulConfig,
+                   let gratefulCell = cell as? GratefulCellConfigurable {
+                    gratefulCell.update(configuration: gratefulConfig)
                 }
                 return cell
 
@@ -311,16 +313,31 @@ public class MoreViewController: UIViewController {
         navigationController?.pushViewController(viewController, animated: animated ? ConsideringUser.pushAnimated : false)
     }
 
-    func appendMembershipSection(to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>) {
-        guard MoreKit.productID != nil else { return }
+    func membershipItem(
+        productID: String?,
+        proTier: ProTier,
+        membershipDisplayPrice: String?
+    ) -> Item? {
+        guard productID != nil else { return nil }
 
-        snapshot.appendSections([.membership])
-        switch User.shared.proTier() {
+        switch proTier {
         case .lifetime:
-            snapshot.appendItems([.thanks], toSection: .membership)
+            guard configuration.gratefulConfig != nil else { return nil }
+            return .thanks
         case .none:
-            snapshot.appendItems([.promotion(Store.shared.membershipDisplayPrice() ?? "?.??")], toSection: .membership)
+            guard configuration.promotionConfig != nil else { return nil }
+            return .promotion(membershipDisplayPrice ?? "?.??")
         }
+    }
+
+    func appendMembershipSection(to snapshot: inout NSDiffableDataSourceSnapshot<Section, Item>) {
+        guard let membershipItem = membershipItem(
+            productID: MoreKit.productID,
+            proTier: User.shared.proTier(),
+            membershipDisplayPrice: Store.shared.membershipDisplayPrice()
+        ) else { return }
+        snapshot.appendSections([.membership])
+        snapshot.appendItems([membershipItem], toSection: .membership)
     }
 
     func appendCustomSection(

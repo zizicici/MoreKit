@@ -173,6 +173,125 @@ struct AppShowcaseConfigurationTests {
     }
 }
 
+@Suite("MoreViewController Membership Tests")
+struct MoreViewControllerMembershipTests {
+    @Test("Membership configs default to nil")
+    func testMembershipConfigsDefaultToNil() {
+        let configuration = MoreViewControllerConfiguration(
+            title: "More",
+            email: "support@example.com",
+            appStoreId: "123456789",
+            specificationsConfig: SpecificationsConfiguration(
+                summaryItems: [],
+                thirdPartyLibraries: []
+            )
+        )
+
+        #expect(configuration.promotionConfig == nil)
+        #expect(configuration.gratefulConfig == nil)
+    }
+
+    @Test("Free users hide membership item without promotion config")
+    @MainActor
+    func testMembershipItemSkipsPromotionWhenConfigMissing() {
+        let controller = MoreViewController(
+            configuration: MoreViewControllerConfiguration(
+                title: "More",
+                gratefulConfig: GratefulCellConfiguration(
+                    title: "Thanks",
+                    content: "Unlocked"
+                ),
+                email: "support@example.com",
+                appStoreId: "123456789",
+                specificationsConfig: SpecificationsConfiguration(
+                    summaryItems: [],
+                    thirdPartyLibraries: []
+                )
+            )
+        )
+
+        let item = controller.membershipItem(
+            productID: "com.test.pro",
+            proTier: .none,
+            membershipDisplayPrice: "$9.99"
+        )
+
+        #expect(item == nil)
+    }
+
+    @Test("Lifetime users hide membership item without grateful config")
+    @MainActor
+    func testMembershipItemSkipsThanksWhenConfigMissing() {
+        let controller = MoreViewController(
+            configuration: MoreViewControllerConfiguration(
+                title: "More",
+                promotionConfig: PromotionCellConfiguration(
+                    title: "Upgrade",
+                    features: ["Feature"]
+                ),
+                email: "support@example.com",
+                appStoreId: "123456789",
+                specificationsConfig: SpecificationsConfiguration(
+                    summaryItems: [],
+                    thirdPartyLibraries: []
+                )
+            )
+        )
+
+        let item = controller.membershipItem(
+            productID: "com.test.pro",
+            proTier: .lifetime,
+            membershipDisplayPrice: "$9.99"
+        )
+
+        #expect(item == nil)
+    }
+
+    @Test("Membership item still renders when matching config exists")
+    @MainActor
+    func testMembershipItemUsesMatchingConfig() {
+        let controller = MoreViewController(
+            configuration: MoreViewControllerConfiguration(
+                title: "More",
+                promotionConfig: PromotionCellConfiguration(
+                    title: "Upgrade",
+                    features: ["Feature"]
+                ),
+                gratefulConfig: GratefulCellConfiguration(
+                    title: "Thanks",
+                    content: "Unlocked"
+                ),
+                email: "support@example.com",
+                appStoreId: "123456789",
+                specificationsConfig: SpecificationsConfiguration(
+                    summaryItems: [],
+                    thirdPartyLibraries: []
+                )
+            )
+        )
+
+        let promotionItem = controller.membershipItem(
+            productID: "com.test.pro",
+            proTier: .none,
+            membershipDisplayPrice: "$9.99"
+        )
+        let gratefulItem = controller.membershipItem(
+            productID: "com.test.pro",
+            proTier: .lifetime,
+            membershipDisplayPrice: "$9.99"
+        )
+
+        switch promotionItem {
+        case .promotion(let price):
+            #expect(price == "$9.99")
+        default:
+            Issue.record("Expected a promotion item when promotionConfig exists.")
+        }
+
+        #expect(gratefulItem == .thanks)
+    }
+}
+
 @Suite("PromotionCellConfiguration Tests")
 struct PromotionCellConfigurationTests {
     @Test("Default values")

@@ -13,7 +13,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "1.6.3")
+    .package(url: "https://github.com/user/MoreKit.git", from: "1.7.0")
 ]
 ```
 
@@ -73,8 +73,8 @@ let moreVC = MoreViewController(configuration: config)
 |---|---|---|---|
 | `title` | `String` | Required | Tab bar and navigation title |
 | `tabBarImage` | `UIImage?` | `ellipsis` | Tab bar icon |
-| `promotionConfig` | `PromotionCellConfiguration` | Required | Promotion cell appearance |
-| `gratefulConfig` | `GratefulCellConfiguration` | Required | Post-purchase cell appearance |
+| `promotionConfig` | `PromotionCellConfiguration?` | `nil` | Promotion cell appearance for non-members |
+| `gratefulConfig` | `GratefulCellConfiguration?` | `nil` | Post-purchase cell appearance for members |
 | `email` | `String` | Required | Contact email address |
 | `showContactImages` | `Bool` | `true` | Show/hide contact item icons |
 | `appStoreId` | `String` | Required | App Store ID for share/review |
@@ -83,6 +83,11 @@ let moreVC = MoreViewController(configuration: config)
 | `appShowcase` | `AppShowcaseConfiguration` | `AppShowcaseConfiguration()` | App showcase section configuration |
 
 The EULA link uses the [Apple Standard EULA](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/) by default and is always displayed. Share and Review entries are automatically shown only when the app is live on the App Store.
+
+The membership section is shown only when `MoreKit.productID` is configured and the current membership state has a matching config:
+
+- free users require `promotionConfig`
+- lifetime users require `gratefulConfig`
 
 `AppShowcaseConfiguration` centralizes what used to be `otherApps` and `otherAppsDisplayCount`, and also lets you override or disable the developer-page entry:
 

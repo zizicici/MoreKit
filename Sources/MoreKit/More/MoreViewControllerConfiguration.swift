@@ -11,9 +11,9 @@ public struct MoreViewControllerConfiguration {
 
     // Membership
     public let promotionCellClass: (UITableViewCell & PromotionCellConfigurable).Type
-    public let promotionConfig: PromotionCellConfiguration
+    public let promotionConfig: PromotionCellConfiguration?
     public let gratefulCellClass: (UITableViewCell & GratefulCellConfigurable).Type
-    public let gratefulConfig: GratefulCellConfiguration
+    public let gratefulConfig: GratefulCellConfiguration?
 
     // Contact
     public let email: String
@@ -60,9 +60,9 @@ public struct MoreViewControllerConfiguration {
         title: String,
         tabBarImage: UIImage? = UIImage(systemName: "ellipsis"),
         promotionCellClass: (UITableViewCell & PromotionCellConfigurable).Type = PromotionCell.self,
-        promotionConfig: PromotionCellConfiguration,
+        promotionConfig: PromotionCellConfiguration? = nil,
         gratefulCellClass: (UITableViewCell & GratefulCellConfigurable).Type = GratefulCell.self,
-        gratefulConfig: GratefulCellConfiguration,
+        gratefulConfig: GratefulCellConfiguration? = nil,
         email: String,
         showContactImages: Bool = true,
         appStoreId: String,
