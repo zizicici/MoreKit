@@ -25,10 +25,15 @@ public struct MoreCustomSection: Hashable {
 }
 
 public struct MoreCustomItem: Hashable {
+    enum BuiltInAction: Hashable {
+        case openLanguageSettings
+    }
+
     public let id: String
     public let title: String
     public let value: String?
     public let badge: MoreBadgeStyle?
+    let builtInAction: BuiltInAction?
 
     public init(
         id: String,
@@ -36,10 +41,47 @@ public struct MoreCustomItem: Hashable {
         value: String? = nil,
         badge: MoreBadgeStyle? = nil
     ) {
+        self.init(
+            id: id,
+            title: title,
+            value: value,
+            badge: badge,
+            builtInAction: nil
+        )
+    }
+
+    init(
+        id: String,
+        title: String,
+        value: String? = nil,
+        badge: MoreBadgeStyle? = nil,
+        builtInAction: BuiltInAction? = nil
+    ) {
         self.id = id
         self.title = title
         self.value = value
         self.badge = badge
+        self.builtInAction = builtInAction
+    }
+}
+
+public extension MoreCustomItem {
+    static let languageSettingsID = "settings.language"
+
+    static func languageSettings(
+        title: String? = nil,
+        value: String? = nil,
+        badge: MoreBadgeStyle? = nil
+    ) -> MoreCustomItem {
+        let bundle = Bundle.module
+
+        return MoreCustomItem(
+            id: languageSettingsID,
+            title: title ?? String(localized: "more.item.settings.language", bundle: bundle),
+            value: value ?? Language.currentDisplayName(bundle: bundle),
+            badge: badge,
+            builtInAction: .openLanguageSettings
+        )
     }
 }
 

@@ -173,6 +173,18 @@ struct AppShowcaseConfigurationTests {
     }
 }
 
+@Suite("MoreCustomItem Tests")
+struct MoreCustomItemTests {
+    @Test("Language settings item uses built-in identifier")
+    func testLanguageSettingsItem() {
+        let item = MoreCustomItem.languageSettings()
+
+        #expect(item.id == MoreCustomItem.languageSettingsID)
+        #expect(!item.title.isEmpty)
+        #expect(item.value == Language.currentDisplayName(bundle: .module))
+    }
+}
+
 @Suite("MoreViewController Membership Tests")
 struct MoreViewControllerMembershipTests {
     @Test("Membership configs default to nil")

@@ -13,7 +13,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "1.7.0")
+    .package(url: "https://github.com/user/MoreKit.git", from: "1.7.1")
 ]
 ```
 
@@ -113,9 +113,24 @@ MoreKitAppearance.shared = MoreKitAppearance(
 Implement `MoreViewControllerDataSource` to add custom sections and control section order:
 
 ```swift
+private func generalSection() -> MoreCustomSection {
+    MoreCustomSection(
+        id: "general",
+        header: "General",
+        items: [
+            .languageSettings(),
+            MoreCustomItem(
+                id: "theme",
+                title: "Theme",
+                value: currentThemeName
+            ),
+        ]
+    )
+}
+
 extension MyClass: MoreViewControllerDataSource {
     func sections(for controller: MoreViewController) -> [MoreSectionType] {
-        [.membership, .custom(settingsSection), .contact, .appjun, .about]
+        [.membership, .custom(generalSection()), .contact, .appjun, .about]
     }
 
     func moreViewController(_ controller: MoreViewController, didSelectCustomItem item: MoreCustomItem) {
@@ -128,6 +143,8 @@ extension MyClass: MoreViewControllerDataSource {
     }
 }
 ```
+
+`MoreCustomItem.languageSettings()` is handled by MoreKit and opens the app's system settings page after `didSelectCustomItem` is called. Its value defaults to the current language name resolved from the same localization bundle as its title.
 
 ### Custom Promotion / Grateful Cells
 

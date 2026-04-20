@@ -403,6 +403,9 @@ extension MoreViewController: UITableViewDelegate {
             break
         case .custom(let customItem):
             dataSource?.moreViewController(self, didSelectCustomItem: customItem)
+            if handleBuiltInAction(for: customItem) {
+                return
+            }
         case .contact(let contactItem):
             handleContact(contactItem)
         case .showcaseApp(let app):
@@ -426,6 +429,16 @@ extension MoreViewController: UITableViewDelegate {
 // MARK: - Built-in Actions
 
 extension MoreViewController {
+    func handleBuiltInAction(for item: MoreCustomItem) -> Bool {
+        switch item.builtInAction {
+        case .openLanguageSettings:
+            jumpToSettings()
+            return true
+        case .none:
+            return false
+        }
+    }
+
     func lifetimeAction() {
         showOverlayViewController()
         Task {
