@@ -16,6 +16,7 @@ public struct PromotionCellConfiguration {
     public let featureColor: UIColor
     public let buttonTintColor: UIColor
     public let buttonTextColor: UIColor
+    public let buttonTitle: String
     public let buttonIcon: String?
 
     public init(
@@ -28,6 +29,7 @@ public struct PromotionCellConfiguration {
         featureColor: UIColor = .white.withAlphaComponent(0.8),
         buttonTintColor: UIColor = .white,
         buttonTextColor: UIColor = .black,
+        buttonTitle: String? = nil,
         buttonIcon: String? = "arrowshape.up.circle"
     ) {
         self.title = title
@@ -39,6 +41,7 @@ public struct PromotionCellConfiguration {
         self.featureColor = featureColor
         self.buttonTintColor = buttonTintColor
         self.buttonTextColor = buttonTextColor
+        self.buttonTitle = buttonTitle ?? String(localized: "store.purchase", bundle: .module)
         self.buttonIcon = buttonIcon
     }
 }
@@ -218,6 +221,7 @@ public class PromotionCell: UITableViewCell, PromotionCellConfigurable {
         priceLabel.textColor = config.buttonTintColor.withAlphaComponent(0.9)
 
         var btnConfig = purchaseButton.configuration
+        btnConfig?.title = config.buttonTitle
         if let iconName = config.buttonIcon {
             btnConfig?.image = UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .medium))?.withTintColor(config.buttonTextColor, renderingMode: .alwaysOriginal)
         } else {

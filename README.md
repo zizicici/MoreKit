@@ -13,7 +13,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "1.6.2")
+    .package(url: "https://github.com/user/MoreKit.git", from: "1.6.3")
 ]
 ```
 
@@ -40,7 +40,8 @@ let config = MoreViewControllerConfiguration(
     title: "More",
     promotionConfig: PromotionCellConfiguration(
         title: "Unlock All Features",
-        features: ["Feature A", "Feature B", "Feature C"]
+        features: ["Feature A", "Feature B", "Feature C"],
+        buttonTitle: "Go Pro"
     ),
     gratefulConfig: GratefulCellConfiguration(
         title: "Thank You!",
@@ -61,6 +62,8 @@ let config = MoreViewControllerConfiguration(
 
 let moreVC = MoreViewController(configuration: config)
 ```
+
+`PromotionCellConfiguration.buttonTitle` lets you override the purchase button text; if omitted, MoreKit keeps using the localized default purchase label.
 
 ## Configuration
 

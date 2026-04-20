@@ -184,7 +184,19 @@ struct PromotionCellConfigurationTests {
         #expect(config.title == "Upgrade")
         #expect(config.features.count == 2)
         #expect(config.gradientColors.count == 2)
+        #expect(config.buttonTitle == String(localized: "store.purchase", bundle: .module))
         #expect(config.buttonIcon == "arrowshape.up.circle")
+    }
+
+    @Test("Custom purchase button title")
+    func testCustomButtonTitle() {
+        let config = PromotionCellConfiguration(
+            title: "Upgrade",
+            features: ["Feature 1", "Feature 2"],
+            buttonTitle: "Buy Now"
+        )
+
+        #expect(config.buttonTitle == "Buy Now")
     }
 }
 
