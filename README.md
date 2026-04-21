@@ -13,7 +13,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "1.8.0")
+    .package(url: "https://github.com/user/MoreKit.git", from: "1.9.0")
 ]
 ```
 
@@ -32,6 +32,21 @@ MoreKit.configure(
     membershipKey: "com.example.Store.LifetimeMembership"  // optional
 )
 ```
+
+#### Widget / App Extension
+
+From a widget or other read-only extension, call `configureForReadOnlyAccess(...)`. MoreKit attaches the shared app-group cache and does not start StoreKit in the extension process:
+
+```swift
+MoreKit.configureForReadOnlyAccess(
+    appGroupID: "group.com.example.app",
+    membershipKey: "com.example.Store.LifetimeMembership"  // must match the main app
+)
+```
+
+If the main app passes a custom `membershipKey` to its `configure(...)` call, the extension must pass the exact same value; otherwise the two processes read and write different keys in the shared suite and the extension will never see the main app's membership state.
+
+The main app remains responsible for populating the cache via the standard `configure(...)` call above. The extension reads membership state through `User.shared.proTier()`.
 
 ### 2. Create the MoreViewController
 
