@@ -13,7 +13,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "1.7.1")
+    .package(url: "https://github.com/user/MoreKit.git", from: "1.8.0")
 ]
 ```
 

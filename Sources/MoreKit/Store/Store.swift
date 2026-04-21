@@ -33,6 +33,13 @@ public enum ProTier: Sendable {
     case none
 }
 
+public enum PurchaseOutcome: Sendable {
+    case success(Transaction)
+    case pending
+    case cancelled
+    case alreadyOwned
+}
+
 private final class StoreStateSnapshot: @unchecked Sendable {
     private let lock = NSLock()
     private var hasValidMembership = false
@@ -147,7 +154,7 @@ public class Store: ObservableObject {
         }
     }
 
-    internal func purchase(_ product: Product) async throws -> Transaction? {
+    internal func purchase(_ product: Product) async throws -> PurchaseOutcome {
         let result = try await product.purchase()
 
         switch result {
@@ -155,11 +162,13 @@ public class Store: ObservableObject {
             let transaction = try Self.checkVerified(verification)
             await updateCustomerProductStatus()
             await transaction.finish()
-            return transaction
-        case .userCancelled, .pending:
-            return nil
+            return .success(transaction)
+        case .pending:
+            return .pending
+        case .userCancelled:
+            return .cancelled
         @unknown default:
-            return nil
+            return .cancelled
         }
     }
 
@@ -187,9 +196,9 @@ public class Store: ObservableObject {
 }
 
 extension Store {
-    public func purchaseLifetimeMembership() async throws -> Transaction? {
+    public func purchaseLifetimeMembership() async throws -> PurchaseOutcome {
         guard purchasedProductIDs.isEmpty else {
-            return nil
+            return .alreadyOwned
         }
         guard let membership = memberships.first else {
             throw StoreError.productsUnavailable

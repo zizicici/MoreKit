@@ -442,21 +442,29 @@ extension MoreViewController {
     func lifetimeAction() {
         showOverlayViewController()
         Task {
-            var errorMessage: String?
+            var alertTitle: String?
+            var alertMessage: String?
             var purchased = false
             do {
-                if let _ = try await Store.shared.purchaseLifetimeMembership() {
+                switch try await Store.shared.purchaseLifetimeMembership() {
+                case .success:
                     purchased = true
+                case .pending:
+                    alertTitle = String(localized: "store.purchase.pending.title", bundle: .module)
+                    alertMessage = String(localized: "store.purchase.pending.message", bundle: .module)
+                case .cancelled, .alreadyOwned:
+                    break
                 }
             } catch {
-                errorMessage = error.localizedDescription
+                alertTitle = String(localized: "store.orderFailure", bundle: .module)
+                alertMessage = error.localizedDescription
             }
             if purchased {
                 reloadData()
             }
             hideOverlayViewController { [weak self] in
-                if let errorMessage {
-                    self?.showAlert(title: String(localized: "store.orderFailure", bundle: .module), message: errorMessage)
+                if let alertTitle {
+                    self?.showAlert(title: alertTitle, message: alertMessage)
                 }
             }
         }
