@@ -50,6 +50,7 @@ public struct MoreViewControllerConfiguration {
             ContactItemConfiguration(
                 id: "xiaohongshu",
                 title: String(localized: "more.contact.xiaohongshu", bundle: .module),
+                value: "@App君",
                 image: showContactImages ? UIImage(systemName: "book.closed.circle") : nil,
                 handler: .url("https://www.xiaohongshu.com/user/profile/63f05fc5000000001001e524")
             ),
