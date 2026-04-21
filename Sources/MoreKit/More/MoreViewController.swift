@@ -442,26 +442,50 @@ extension MoreViewController {
     func lifetimeAction() {
         showOverlayViewController()
         Task {
+            var errorMessage: String?
+            var purchased = false
             do {
                 if let _ = try await Store.shared.purchaseLifetimeMembership() {
-                    reloadData()
+                    purchased = true
                 }
             } catch {
-                showAlert(title: String(localized: "store.orderFailure", bundle: .module), message: error.localizedDescription)
+                errorMessage = error.localizedDescription
             }
-            hideOverlayViewController()
+            if purchased {
+                reloadData()
+            }
+            hideOverlayViewController { [weak self] in
+                if let errorMessage {
+                    self?.showAlert(title: String(localized: "store.orderFailure", bundle: .module), message: errorMessage)
+                }
+            }
         }
     }
 
     func restorePurchases() {
+        showOverlayViewController()
         Task {
-            showOverlayViewController()
+            let alertTitle: String
+            var alertMessage: String?
+            var shouldReload = false
             do {
                 try await Store.shared.sync()
+                if Store.shared.hasValidMembership() {
+                    alertTitle = String(localized: "store.restore.success", bundle: .module)
+                    shouldReload = true
+                } else {
+                    alertTitle = String(localized: "store.restore.noPurchases", bundle: .module)
+                }
             } catch {
-                showAlert(title: String(localized: "store.orderFailure", bundle: .module), message: error.localizedDescription)
+                alertTitle = String(localized: "store.orderFailure", bundle: .module)
+                alertMessage = error.localizedDescription
             }
-            hideOverlayViewController()
+            if shouldReload {
+                reloadData()
+            }
+            hideOverlayViewController { [weak self] in
+                self?.showAlert(title: alertTitle, message: alertMessage)
+            }
         }
     }
 

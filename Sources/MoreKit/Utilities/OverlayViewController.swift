@@ -34,7 +34,7 @@ extension UIViewController {
         navigationController?.present(overlayVC, animated: ConsideringUser.animated, completion: nil)
     }
 
-    public func hideOverlayViewController() {
-        navigationController?.dismiss(animated: ConsideringUser.animated, completion: nil)
+    public func hideOverlayViewController(completion: (() -> Void)? = nil) {
+        navigationController?.dismiss(animated: ConsideringUser.animated, completion: completion)
     }
 }
