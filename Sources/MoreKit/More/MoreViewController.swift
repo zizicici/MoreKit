@@ -415,7 +415,7 @@ extension MoreViewController: UITableViewDelegate {
         case .aboutSpecifications:
             enterSpecifications()
         case .aboutShare:
-            shareApp()
+            shareApp(from: tableView.cellForRow(at: indexPath) ?? tableView)
         case .aboutReview:
             openAppStoreForReview()
         case .aboutEULA:
@@ -518,9 +518,11 @@ extension MoreViewController {
         navigationController?.pushViewController(vc, animated: ConsideringUser.pushAnimated)
     }
 
-    func shareApp() {
+    func shareApp(from sourceView: UIView) {
         if let url = URL(string: "https://apps.apple.com/app/id\(configuration.appStoreId)") {
             let controller = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            controller.popoverPresentationController?.sourceView = sourceView
+            controller.popoverPresentationController?.sourceRect = sourceView.bounds
             present(controller, animated: ConsideringUser.animated)
         }
     }
