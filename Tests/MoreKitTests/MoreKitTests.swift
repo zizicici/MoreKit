@@ -185,6 +185,58 @@ struct MoreCustomItemTests {
     }
 }
 
+@Suite("Settings Notification Tests")
+struct SettingsNotificationTests {
+    @Test("Settings update notification is delivered on main thread")
+    func testSettingsUpdateNotificationIsDeliveredOnMainThread() async {
+        ThreadedSetting.userDefaults.removeObject(forKey: ThreadedSetting.getKey())
+        defer {
+            ThreadedSetting.userDefaults.removeObject(forKey: ThreadedSetting.getKey())
+        }
+
+        let deliveredOnMainThread = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            var observer: NSObjectProtocol?
+            observer = NotificationCenter.default.addObserver(forName: .SettingsUpdate, object: nil, queue: nil) { _ in
+                if let observer {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+                continuation.resume(returning: Thread.isMainThread)
+            }
+
+            DispatchQueue.global(qos: .userInitiated).async {
+                ThreadedSetting.setValue(.second)
+            }
+        }
+
+        #expect(deliveredOnMainThread)
+    }
+}
+
+private enum ThreadedSetting: Int, CaseIterable, UserDefaultSettable {
+    case first
+    case second
+
+    func getName() -> String {
+        String(rawValue)
+    }
+
+    static func getTitle() -> String {
+        "Threaded Setting"
+    }
+
+    static func getOptions() -> [ThreadedSetting] {
+        Array(allCases)
+    }
+
+    static func getKey() -> String {
+        "MoreKitTests.ThreadedSetting"
+    }
+
+    static var defaultOption: ThreadedSetting {
+        .first
+    }
+}
+
 @Suite("MoreViewController Membership Tests")
 struct MoreViewControllerMembershipTests {
     @Test("Membership configs default to nil")

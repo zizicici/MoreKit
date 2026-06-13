@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+import Dispatch
 import Foundation
 
 extension Notification.Name {
@@ -61,7 +62,14 @@ extension UserDefaultSettable where Self: RawRepresentable, Self.RawValue == Int
 
     public static func setValue(_ value: Self) {
         userDefaults.set(value.rawValue, forKey: getKey())
-        NotificationCenter.default.post(name: .SettingsUpdate, object: nil)
+
+        if Thread.isMainThread {
+            NotificationCenter.default.post(name: .SettingsUpdate, object: nil)
+        } else {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .SettingsUpdate, object: nil)
+            }
+        }
     }
 
     public static var current: Self {
