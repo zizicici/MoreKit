@@ -15,6 +15,16 @@ public enum MoreKit {
     /// App Group UserDefaults, derived from appGroupID
     public private(set) static var appGroupUserDefaults: UserDefaults?
 
+    /// The UserDefaults suite backing the membership cache: the app-group suite when `appGroupID` was
+    /// configured (kept non-nil by `openAppGroup`, which hard-fails if the suite cannot be opened),
+    /// otherwise `.standard`. Single source for the suite so `Store`, `User`, and extensions agree.
+    internal static var membershipDefaults: UserDefaults? {
+        if appGroupID != nil {
+            return appGroupUserDefaults
+        }
+        return .standard
+    }
+
     /// Configure MoreKit in the main app. Must be called exactly once per process, on the main thread,
     /// before accessing any MoreKit types. Starts StoreKit and writes the shared membership cache.
     ///

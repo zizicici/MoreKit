@@ -197,6 +197,60 @@ enum ThemeSetting: String, UserDefaultSettable {
 }
 ```
 
+## Membership & Entitlements
+
+MoreKit manages a single **lifetime non-consumable** purchase (StoreKit 2) and exposes the result as a `ProTier` (`.lifetime` / `.none`). The membership section, purchase flow, and restore are wired up automatically once `productID` is configured.
+
+### Reading membership state
+
+Prefer `User.shared.proTier()`. It is backed by a durable cache and is correct on the first frame at launch and from read-only extensions:
+
+```swift
+if User.shared.proTier() == .lifetime {
+    // unlock pro features
+}
+```
+
+`Store.shared.hasValidMembership()` and `Store.shared.proTier()` reflect the live StoreKit state within the main app process.
+
+### How state is determined (latch model)
+
+Membership is a **latch**, driven only by unambiguous signals:
+
+- **Granted** by positive, verified proof: a completed purchase, a verified transaction from `Transaction.updates`, or a reconciliation that finds the entitlement owned.
+- **Cleared** only when a reconciliation observes the entitlement as **revoked** — a transaction whose `revocationDate` is set. Apple sets this for refunds and for loss of access through Family Sharing, and delivers it via `Transaction.updates`.
+- **Never** changed by the mere *absence* of an entitlement. `Transaction.currentEntitlements` can be transiently empty (cold start, offline launch, server propagation lag); treating that as "not a member" is exactly what would wrongly downgrade a paying user, so MoreKit ignores it.
+
+The single invariant: **positive proof is sticky; only an observed revocation clears membership.**
+
+### Durable cache & launch hydration
+
+The last known membership is mirrored to `UserDefaults` — the app-group suite when `appGroupID` is configured, otherwise `.standard`, under `membershipKey`. At launch MoreKit hydrates in-memory state from this cache, so membership is correct immediately, before StoreKit responds, and is visible to read-only extensions through `User.shared.proTier()`. Only the main app writes the cache; extensions never clobber it.
+
+### Restore
+
+`Store.shared.sync()` forces an `AppStore.sync()` and re-reconciles, retrying briefly while the entitlement is still propagating. A restore can only **grant/confirm** membership, or clear it on a **real revocation** — a transient miss never downgrades an existing member, even offline. The built-in restore button uses this.
+
+### Revocation
+
+Refunds and Family Sharing removal arrive as revoked transactions on `Transaction.updates`. A verified revoked transaction triggers a reconciliation (a fresh StoreKit scan) rather than clearing blindly — membership is keyed to the product, so a newer in-app repurchase is kept, and `Transaction.latest` surfaces a revoked transaction even though `currentEntitlements` omits it. Membership clears only when that scan reports `.revoked`; a transient `.missing` never downgrades. And a purchase that completes while a reconciliation is scanning always wins — the reconciliation will not clear membership over it. Revocation is intentionally **best-effort**: a refund is reflected at the next reconciliation (launch, Restore, or the revoked update) rather than instantly. This keeps the flow simple and biased toward the paying user — an owning or paying user is never shown as a non-member. MoreKit does **not** revoke a cached membership merely because a restore was performed under a different Apple ID.
+
+### Notifications
+
+| Name | Posted when |
+|---|---|
+| `.LifetimeMembership` | Membership becomes active — `purchasedProductIDs` transitions from empty to non-empty (a purchase, or a restore/reconciliation that first finds the entitlement). Not posted on launch cache hydration. |
+| `.StoreInfoLoaded` | Membership state changes (granted or cleared). |
+| `.StoreProductsLoaded` | Products load / price becomes available. |
+
+```swift
+NotificationCenter.default.addObserver(
+    forName: .LifetimeMembership, object: nil, queue: .main
+) { _ in
+    // celebrate the purchase
+}
+```
+
 ## Built-in Sections
 
 | Section | Description |

@@ -410,3 +410,106 @@ struct HelperTests {
         _ = SpecificationsViewController.getAppName()
     }
 }
+
+/// Locks in the membership latch: positive proof grants and is sticky, only an observed `.revoked`
+/// reconciliation clears, and `.missing` never downgrades a member.
+///
+/// Coverage boundary: these drive the in-process apply logic via `applyMembership` /
+/// `applyReconciledOutcome` and the `scanOverrideForTesting` seam (no live StoreKit). The thin verified-
+/// transaction entry points (`purchase()`, `applyVerifiedMembershipUpdate`) are not driven end-to-end —
+/// that would need a StoreKitTest configuration. The suite is `.serialized` because it sets the
+/// process-global `MoreKit.productID` and posts on the default `NotificationCenter`.
+@Suite("Store Membership Latch Tests", .serialized)
+@MainActor
+final class StoreMembershipLatchTests {
+    private let originalProductID = MoreKit.productID
+
+    init() {
+        MoreKit.productID = "com.test.pro"
+    }
+
+    deinit {
+        // Leave the process-global config as we found it, so this suite can't leak into other suites.
+        MoreKit.productID = originalProductID
+    }
+
+    private func makeStore() -> Store {
+        Store()
+    }
+
+    @Test("Positive proof grants membership")
+    func grantSetsMember() {
+        let store = makeStore()
+        store.applyMembership(true)
+        #expect(store.hasValidMembership())
+    }
+
+    @Test("A reconciliation that observes .revoked clears membership")
+    func revokedReconcileClears() {
+        let store = makeStore()
+        store.applyReconciledOutcome(.owned)
+        #expect(store.hasValidMembership())
+        store.applyReconciledOutcome(.revoked)
+        #expect(!store.hasValidMembership())
+    }
+
+    @Test(".missing never downgrades a member")
+    func missingNeverDowngrades() {
+        let store = makeStore()
+        store.applyReconciledOutcome(.owned)
+        #expect(store.hasValidMembership())
+        store.applyReconciledOutcome(.missing)
+        #expect(store.hasValidMembership())   // still a member
+    }
+
+    @Test("A real reconciliation does not downgrade a member when StoreKit reports nothing")
+    func realReconcileMissingKeepsMember() async {
+        let store = makeStore()
+        store.applyMembership(true)
+        #expect(store.hasValidMembership())
+        defer { store.scanOverrideForTesting = nil }
+        store.scanOverrideForTesting = { .missing }   // deterministic, independent of ambient StoreKit state
+        await store.updateCustomerProductStatus()
+        #expect(store.hasValidMembership())            // .missing must never downgrade
+    }
+
+    @Test("A purchase that lands during a reconcile scan is not clobbered by a stale .revoked")
+    func grantDuringScanSurvivesStaleRevoked() async {
+        let store = makeStore()   // non-member (e.g. a previously-refunded user)
+        defer { store.scanOverrideForTesting = nil }
+        // The scan reads the pre-purchase (revoked) state, but the user purchases mid-scan: the grant
+        // lands, then the stale scan resolves .revoked. The purchase must win.
+        store.scanOverrideForTesting = {
+            store.applyMembership(true)   // a purchase grant lands during the scan
+            return .revoked               // ...but the scan had already read the pre-purchase revoked state
+        }
+        await store.updateCustomerProductStatus()
+        #expect(store.hasValidMembership())   // the purchase wins — membership is not cleared
+    }
+
+    @Test("hasValidMembership() is already true inside a .LifetimeMembership observer")
+    func snapshotIsCurrentWhenLifetimeMembershipPosts() {
+        let store = makeStore()
+        var observedMember: Bool?
+        let token = NotificationCenter.default.addObserver(forName: .LifetimeMembership, object: nil, queue: nil) { _ in
+            observedMember = store.hasValidMembership()
+        }
+        defer { NotificationCenter.default.removeObserver(token) }
+        store.applyMembership(true)   // empty → member, posts .LifetimeMembership
+        #expect(observedMember == true)
+    }
+
+    @Test(".StoreInfoLoaded (which writes the durable cache) is posted before .LifetimeMembership")
+    func storeInfoLoadedPostedBeforeLifetimeMembership() {
+        let store = makeStore()
+        var order: [String] = []
+        let infoToken = NotificationCenter.default.addObserver(forName: .StoreInfoLoaded, object: nil, queue: nil) { _ in order.append("info") }
+        let lifetimeToken = NotificationCenter.default.addObserver(forName: .LifetimeMembership, object: nil, queue: nil) { _ in order.append("lifetime") }
+        defer {
+            NotificationCenter.default.removeObserver(infoToken)
+            NotificationCenter.default.removeObserver(lifetimeToken)
+        }
+        store.applyMembership(true)   // empty → member
+        #expect(order == ["info", "lifetime"])   // cache write must precede the membership-active event
+    }
+}

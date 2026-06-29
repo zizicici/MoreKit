@@ -477,8 +477,7 @@ extension MoreViewController {
             var alertMessage: String?
             var shouldReload = false
             do {
-                try await Store.shared.sync()
-                if Store.shared.hasValidMembership() {
+                if try await Store.shared.syncMembershipStatus() {
                     alertTitle = String(localized: "store.restore.success", bundle: .module)
                     shouldReload = true
                 } else {
