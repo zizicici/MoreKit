@@ -3,78 +3,10 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 import SnapKit
 import SafariServices
-
-// MARK: - Configuration
-
-public struct SpecificationsConfiguration {
-    public struct SummaryItem: Hashable {
-        public enum ItemType: Hashable {
-            case name
-            case version
-            case manufacturer
-            case publisher
-            case dateOfProduction
-            case license
-            case custom(String)
-
-            var localizedLabel: String {
-                switch self {
-                case .name:
-                    return String(localized: "specifications.name", bundle: .module)
-                case .version:
-                    return String(localized: "specifications.version", bundle: .module)
-                case .manufacturer:
-                    return String(localized: "specifications.manufacturer", bundle: .module)
-                case .publisher:
-                    return String(localized: "specifications.publisher", bundle: .module)
-                case .dateOfProduction:
-                    return String(localized: "specifications.dateOfProduction", bundle: .module)
-                case .license:
-                    return String(localized: "specifications.license", bundle: .module)
-                case .custom(let title):
-                    return title
-                }
-            }
-        }
-
-        public let type: ItemType
-        public let value: String
-
-        public init(type: ItemType, value: String) {
-            self.type = type
-            self.value = value
-        }
-    }
-
-    public struct ThirdPartyLibrary: Hashable {
-        public let name: String
-        public let version: String
-        public let urlString: String
-
-        public init(name: String, version: String, urlString: String) {
-            self.name = name
-            self.version = version
-            self.urlString = urlString
-        }
-    }
-
-    public let summaryItems: [SummaryItem]
-    public let thirdPartyLibraries: [ThirdPartyLibrary]
-    public let title: String?
-
-    public init(
-        summaryItems: [SummaryItem],
-        thirdPartyLibraries: [ThirdPartyLibrary],
-        title: String? = nil
-    ) {
-        self.summaryItems = summaryItems
-        self.thirdPartyLibraries = thirdPartyLibraries
-        self.title = title
-    }
-}
 
 // MARK: - ViewController
 
@@ -247,3 +179,4 @@ extension SpecificationsViewController {
         return nil
     }
 }
+#endif

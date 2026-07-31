@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public class GradientView: UIView {
@@ -48,3 +49,4 @@ public class GradientView: UIView {
         gradientLayer.colors = gradientColors.map { $0.cgColor }
     }
 }
+#endif

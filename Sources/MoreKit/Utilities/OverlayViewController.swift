@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public class OverlayViewController: UIViewController {
@@ -38,3 +39,4 @@ extension UIViewController {
         navigationController?.dismiss(animated: ConsideringUser.animated, completion: completion)
     }
 }
+#endif

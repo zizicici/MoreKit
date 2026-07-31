@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 import SnapKit
 
@@ -121,3 +122,4 @@ public class SettingOptionsViewController<T: SettingsOption>: UIViewController, 
         self.reloadData()
     }
 }
+#endif

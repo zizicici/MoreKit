@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public struct MoreBadgeStyle: Hashable {
@@ -50,3 +51,4 @@ public struct MoreBadgeStyle: Hashable {
         hasher.combine(contentInsets.right)
     }
 }
+#endif

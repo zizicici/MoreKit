@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 final class MoreCustomBadgeCell: UITableViewCell {
@@ -144,3 +145,4 @@ private extension MoreCustomBadgeCell {
         }
     }
 }
+#endif

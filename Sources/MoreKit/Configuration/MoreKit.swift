@@ -31,6 +31,7 @@ public enum MoreKit {
     /// Unavailable in app extensions — extensions must use `configureForReadOnlyAccess(...)` instead.
     @MainActor
     @available(iOSApplicationExtension, unavailable, message: "App extensions must use MoreKit.configureForReadOnlyAccess(appGroupID:membershipKey:) — extensions cannot run StoreKit.")
+    @available(macOSApplicationExtension, unavailable, message: "App extensions must use MoreKit.configureForReadOnlyAccess(appGroupID:membershipKey:) — extensions cannot run StoreKit.")
     public static func configure(
         productID: String? = nil,
         appGroupID: String? = nil,

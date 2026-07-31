@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+import Combine
 import Foundation
 import StoreKit
 
@@ -21,9 +22,9 @@ extension StoreError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .failedVerification:
-            return String(localized: "store.error.failedVerification", bundle: .module)
+            return String(localized: "store.error.failedVerification", defaultValue: "Transaction verification failed.", bundle: .module)
         case .productsUnavailable:
-            return String(localized: "store.error.productsUnavailable", bundle: .module)
+            return String(localized: "store.error.productsUnavailable", defaultValue: "Products are not available. Please try again.", bundle: .module)
         }
     }
 }

@@ -6,7 +6,8 @@ let package = Package(
     name: "MoreKit",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v15),
+        .macOS(.v12)
     ],
     products: [
         .library(
@@ -20,7 +21,13 @@ let package = Package(
     targets: [
         .target(
             name: "MoreKit",
-            dependencies: ["SnapKit"],
+            dependencies: [
+                .product(
+                    name: "SnapKit",
+                    package: "SnapKit",
+                    condition: .when(platforms: [.iOS, .macCatalyst])
+                )
+            ],
             resources: [.process("Resources")]
         ),
         .testTarget(

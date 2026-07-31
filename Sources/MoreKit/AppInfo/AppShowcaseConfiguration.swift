@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AppShowcaseConfiguration: Hashable {
+public struct AppShowcaseConfiguration: Hashable, Sendable {
     public let apps: [AppInfo.App]
     public let displayCount: Int
     public let developerPageURL: String?
@@ -18,11 +18,11 @@ public struct AppShowcaseConfiguration: Hashable {
         self.automaticallyIncludesFestivalsForChineseLocales = automaticallyIncludesFestivalsForChineseLocales
     }
 
-    var showsDeveloperPageEntry: Bool {
+    public var showsDeveloperPageEntry: Bool {
         developerPageURL != nil
     }
 
-    func resolvedApps(for language: Language.LanguageType) -> [AppInfo.App] {
+    public func resolvedApps(for language: Language.LanguageType) -> [AppInfo.App] {
         var resolved = apps
         if automaticallyIncludesFestivalsForChineseLocales,
            language == .zh,
@@ -32,7 +32,7 @@ public struct AppShowcaseConfiguration: Hashable {
         return resolved
     }
 
-    func displayedApps(for language: Language.LanguageType) -> [AppInfo.App] {
+    public func displayedApps(for language: Language.LanguageType) -> [AppInfo.App] {
         resolvedApps(for: language).randomElements(displayCount)
     }
 }

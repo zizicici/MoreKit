@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 import SnapKit
 
@@ -240,3 +241,4 @@ public class PromotionCell: UITableViewCell, PromotionCellConfigurable {
         priceLabel.text = price
     }
 }
+#endif

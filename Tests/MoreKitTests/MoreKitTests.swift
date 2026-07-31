@@ -1,4 +1,5 @@
 import Testing
+#if canImport(UIKit)
 import UIKit
 @testable import MoreKit
 
@@ -513,3 +514,4 @@ final class StoreMembershipLatchTests {
         #expect(order == ["info", "lifetime"])   // cache write must precede the membership-active event
     }
 }
+#endif

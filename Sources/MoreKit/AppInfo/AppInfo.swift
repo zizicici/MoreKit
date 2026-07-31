@@ -1,11 +1,17 @@
+import Foundation
+
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 public enum AppInfo {
     public enum Developer {
         public static let pageURL = "https://apps.apple.com/developer/zizicici-limited/id1564555697"
     }
 
-    public enum App: Hashable {
+    public enum App: CaseIterable, Hashable, Sendable {
         case lemon
         case moontake
         case coconut
@@ -19,90 +25,125 @@ public enum AppInfo {
         case watermelon
         case doufu
 
-        var image: UIImage? {
+        public var imageName: String {
             switch self {
             case .lemon:
-                UIImage(named: "LemonIcon", in: .module, compatibleWith: nil)
+                "LemonIcon"
             case .moontake:
-                UIImage(named: "MoontakeIcon", in: .module, compatibleWith: nil)
+                "MoontakeIcon"
             case .coconut:
-                UIImage(named: "CoconutIcon", in: .module, compatibleWith: nil)
+                "CoconutIcon"
             case .festivals:
-                UIImage(named: "FestivalsIcon", in: .module, compatibleWith: nil)
+                "FestivalsIcon"
             case .pigeon:
-                UIImage(named: "PigeonIcon", in: .module, compatibleWith: nil)
+                "PigeonIcon"
             case .one:
-                UIImage(named: "OneOneIcon", in: .module, compatibleWith: nil)
+                "OneOneIcon"
             case .offDay:
-                UIImage(named: "OffDayIcon", in: .module, compatibleWith: nil)
+                "OffDayIcon"
             case .tagDay:
-                UIImage(named: "TagDayIcon", in: .module, compatibleWith: nil)
+                "TagDayIcon"
             case .pin:
-                UIImage(named: "PinItIcon", in: .module, compatibleWith: nil)
+                "PinItIcon"
             case .campfire:
-                UIImage(named: "CampfireIcon", in: .module, compatibleWith: nil)
+                "CampfireIcon"
             case .watermelon:
-                UIImage(named: "WatermelonIcon", in: .module, compatibleWith: nil)
+                "WatermelonIcon"
             case .doufu:
-                UIImage(named: "DoufuIcon", in: .module, compatibleWith: nil)
+                "DoufuIcon"
             }
         }
 
-        var name: String {
+        private var imageFileName: String {
+            switch self {
+            case .moontake:
+                "moontake.png"
+            case .festivals, .pigeon:
+                "AppIcon.png"
+            case .offDay:
+                "zzz.png"
+            default:
+                "\(imageName).png"
+            }
+        }
+
+        #if canImport(UIKit)
+        public var image: UIImage? {
+            UIImage(named: imageName, in: .module, compatibleWith: nil)
+        }
+        #elseif canImport(AppKit)
+        public var image: NSImage? {
+            if let image = Bundle.module.image(
+                forResource: NSImage.Name(imageName)
+            ) {
+                return image
+            }
+            guard let url = Bundle.module.url(
+                forResource: imageFileName,
+                withExtension: nil,
+                subdirectory: "AppInfoAssets.xcassets/\(imageName).imageset"
+            ) else {
+                return nil
+            }
+            return NSImage(contentsOf: url)
+        }
+        #endif
+
+        public var name: String {
             switch self {
             case .lemon:
-                String(localized: "app.lemon.title", bundle: .module, comment: "A Lemon Diary")
+                String(localized: "app.lemon.title", defaultValue: "A Lemon Diary", bundle: .module)
             case .moontake:
                 "moontake"
             case .coconut:
-                String(localized: "app.coconut.title", bundle: .module, comment: "Calendar Island")
+                String(localized: "app.coconut.title", defaultValue: "Calendar Island", bundle: .module)
             case .festivals:
-                String(localized: "app.festivals.title", bundle: .module, comment: "China Festivals")
+                String(localized: "app.festivals.title", defaultValue: "China Festivals", bundle: .module)
             case .pigeon:
-                String(localized: "app.pigeon.title", bundle: .module, comment: "Air Pigeon")
+                String(localized: "app.pigeon.title", defaultValue: "Air Pigeon", bundle: .module)
             case .one:
                 "1/1"
             case .offDay:
-                String(localized: "app.offDay.title", bundle: .module, comment: "Off Day")
+                String(localized: "app.offDay.title", defaultValue: "Off Day", bundle: .module)
             case .tagDay:
-                String(localized: "app.tagDay.title", bundle: .module)
+                String(localized: "app.tagDay.title", defaultValue: "Tag Day", bundle: .module)
             case .pin:
-                String(localized: "app.pin.title", bundle: .module)
+                String(localized: "app.pin.title", defaultValue: "Pin It", bundle: .module)
             case .campfire:
-                String(localized: "app.campfire.title", bundle: .module)
+                String(localized: "app.campfire.title", defaultValue: "Campfire", bundle: .module)
             case .watermelon:
-                String(localized: "app.watermelon.title", bundle: .module)
+                String(localized: "app.watermelon.title", defaultValue: "Watermelon", bundle: .module)
             case .doufu:
-                String(localized: "app.doufu.title", bundle: .module)
+                String(localized: "app.doufu.title", defaultValue: "Doufu", bundle: .module)
             }
         }
 
-        var subtitle: String {
+        public var subtitle: String {
             switch self {
             case .lemon:
-                String(localized: "app.lemon.subtitle", bundle: .module, comment: "A pure text diary")
+                String(localized: "app.lemon.subtitle", defaultValue: "A pure text diary", bundle: .module)
             case .moontake:
-                String(localized: "app.moontake.subtitle", bundle: .module, comment: "A camera for moon")
+                String(localized: "app.moontake.subtitle", defaultValue: "A camera for moon", bundle: .module)
             case .coconut:
-                String(localized: "app.coconut.subtitle", bundle: .module, comment: "Calendar + Dynamic Island")
+                String(localized: "app.coconut.subtitle", defaultValue: "Calendar + Dynamic Island", bundle: .module)
             case .festivals:
-                String(localized: "app.festivals.subtitle", bundle: .module, comment: "What festival is it today?")
+                String(localized: "app.festivals.subtitle", defaultValue: "What festival is it today?", bundle: .module)
             case .pigeon:
-                String(localized: "app.pigeon.subtitle", bundle: .module, comment: "Focus Mode On")
+                String(localized: "app.pigeon.subtitle", defaultValue: "Focus Mode On", bundle: .module)
             case .one:
-                String(localized: "app.one.subtitle", bundle: .module, comment: "1/1")
+                String(localized: "app.one.subtitle", defaultValue: "Life Grid", bundle: .module)
             case .offDay:
-                String(localized: "app.offDay.subtitle", bundle: .module)
+                String(localized: "app.offDay.subtitle", defaultValue: "Disable Alarms in Off Day", bundle: .module)
             case .tagDay:
-                String(localized: "app.tagDay.subtitle", bundle: .module)
+                String(localized: "app.tagDay.subtitle", defaultValue: "Add Tags Day by Day", bundle: .module)
             case .pin:
-                String(localized: "app.pin.subtitle", bundle: .module)
+                String(localized: "app.pin.subtitle", defaultValue: "Pin Images in Dynamic Island", bundle: .module)
             case .campfire:
-                String(localized: "app.campfire.subtitle", bundle: .module)
+                String(localized: "app.campfire.subtitle", defaultValue: "Write, Talk and Burn them all", bundle: .module)
             case .watermelon:
-                String(localized: "app.watermelon.subtitle", bundle: .module)
+                String(localized: "app.watermelon.subtitle", defaultValue: "Photos Backup Master", bundle: .module)
             case .doufu:
-                String(localized: "app.doufu.subtitle", bundle: .module)
+                String(localized: "app.doufu.subtitle", defaultValue: "LLM+HTML+CSS+JS", bundle: .module)
             }
         }
 
@@ -134,8 +175,13 @@ public enum AppInfo {
                 "6760194187"
             }
         }
+
+        public var storeURL: URL {
+            URL(string: "https://apps.apple.com/app/id\(storeId)")!
+        }
     }
 
+    #if canImport(UIKit)
     public class AppCell: UITableViewCell {
         private var icon: UIImageView = {
             let imageView = UIImageView()
@@ -200,4 +246,5 @@ public enum AppInfo {
             secondLabel.text = app.subtitle
         }
     }
+    #endif
 }

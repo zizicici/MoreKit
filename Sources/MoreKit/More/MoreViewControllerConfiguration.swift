@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public struct MoreViewControllerConfiguration {
@@ -117,3 +118,4 @@ struct ContactItemConfiguration: Hashable {
         self.handler = handler
     }
 }
+#endif

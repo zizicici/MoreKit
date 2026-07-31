@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 import SnapKit
 
@@ -106,3 +107,4 @@ public class GratefulCell: UITableViewCell, GratefulCellConfigurable {
         contentLabel.textColor = configuration.contentColor
     }
 }
+#endif

@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public struct ConsideringUser {
@@ -18,3 +19,4 @@ public struct ConsideringUser {
         return UIAccessibility.buttonShapesEnabled
     }
 }
+#endif

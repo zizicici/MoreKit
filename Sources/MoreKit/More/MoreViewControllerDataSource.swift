@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public struct MoreCustomSection: Hashable {
@@ -104,3 +105,4 @@ extension MoreViewControllerDataSource {
         return []
     }
 }
+#endif

@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 extension UIColor {
@@ -172,3 +173,4 @@ public struct ColorCalculator {
         Y <= (216 / 24389) ? Y * (24389 / 27) : pow(Y, (1 / 3)) * 116 - 16
     }
 }
+#endif

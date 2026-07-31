@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public struct MoreKitAppearance {
@@ -19,3 +20,4 @@ public struct MoreKitAppearance {
         self.tintColor = tintColor
     }
 }
+#endif

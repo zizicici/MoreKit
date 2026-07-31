@@ -1,10 +1,11 @@
 # MoreKit
 
-A Swift package for building a fully-featured "More" tab in iOS apps, with built-in support for lifetime membership (StoreKit 2), contact section, app showcase, and specifications page.
+A Swift package for StoreKit 2 lifetime membership, app metadata, localized resources, and a fully-featured UIKit "More" tab. The StoreKit and data APIs support both iOS and macOS; UIKit controllers remain iOS-specific.
 
 ## Requirements
 
 - iOS 15.0+
+- macOS 12.0+
 - Swift 5.10+
 
 ## Installation
@@ -13,7 +14,7 @@ Add MoreKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/user/MoreKit.git", from: "2.0.0")
+    .package(url: "https://github.com/zizicici/MoreKit.git", from: "2.0.0")
 ]
 ```
 
@@ -32,6 +33,35 @@ MoreKit.configure(
     membershipKey: "com.example.Store.LifetimeMembership"  // optional
 )
 ```
+
+The same configuration starts StoreKit 2 in an AppKit app. MoreKit also provides native `AppShowcaseView` and `SpecificationsViewController` components on macOS; they use AppKit rather than wrapping UIKit.
+
+```swift
+MoreKit.configure(productID: "com.example.lifetime")
+
+let tier = User.shared.proTier()
+let price = Store.shared.membershipDisplayPrice()
+let otherApps = AppInfo.App.allCases.filter { $0 != .watermelon }
+
+let showcase = AppShowcaseView(
+    apps: otherApps,
+    visibleIconCount: 5
+)
+
+let specifications = SpecificationsViewController(
+    configuration: SpecificationsConfiguration(
+        summaryItems: [
+            .init(type: .name, value: "Watermelon Backup"),
+            .init(type: .version, value: "1.0")
+        ],
+        thirdPartyLibraries: []
+    )
+)
+```
+
+The showcase scrolls continuously, pauses while the pointer is over an icon, shows the app description, and opens the App Store when clicked. App names, descriptions, icons, and Store IDs remain packaged in MoreKit instead of being copied into each macOS app.
+
+`MoreViewController`, promotion cells, and the built-in settings controllers use UIKit and are available only on iOS and Mac Catalyst.
 
 #### Widget / App Extension
 

@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 import SnapKit
 import SafariServices
@@ -595,3 +596,4 @@ extension MoreViewController: SKStoreProductViewControllerDelegate {
         viewController.dismiss(animated: ConsideringUser.animated)
     }
 }
+#endif

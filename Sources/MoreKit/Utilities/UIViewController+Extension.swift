@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 import SafariServices
 
@@ -22,3 +23,4 @@ extension UIViewController {
         present(alertController, animated: true, completion: nil)
     }
 }
+#endif

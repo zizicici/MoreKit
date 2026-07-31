@@ -3,6 +3,7 @@
 //  MoreKit
 //
 
+#if canImport(UIKit)
 import UIKit
 
 public protocol PromotionCellConfigurable: AnyObject {
@@ -15,3 +16,4 @@ public protocol PromotionCellConfigurable: AnyObject {
 public protocol GratefulCellConfigurable: AnyObject {
     func update(configuration: GratefulCellConfiguration)
 }
+#endif
