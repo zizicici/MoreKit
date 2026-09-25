@@ -191,6 +191,12 @@ extension MyClass: MoreViewControllerDataSource {
 
 `MoreCustomItem.languageSettings()` is handled by MoreKit and opens the app's system settings page after `didSelectCustomItem` is called. Its value defaults to the current language name resolved from the same localization bundle as its title.
 
+To append app-specific rows to the built-in About section, implement
+`additionalAboutItems(for:)` on the data source. It defaults to an empty array.
+These rows use the same rendering and `didSelectCustomItem` callback as custom
+sections, and their IDs must be unique across the page. They appear only when
+the data source includes `.about` in its sections.
+
 ### Custom Promotion / Grateful Cells
 
 Conform to `PromotionCellConfigurable` or `GratefulCellConfigurable` to provide fully custom cell implementations:
@@ -226,6 +232,12 @@ enum ThemeSetting: String, UserDefaultSettable {
     }
 }
 ```
+
+On iOS, options can also conform to `SettingsOptionBadgeProviding` and return a
+`MoreBadgeStyle?` from `getBadge()`. `SettingOptionsViewController` displays the
+badge beside the option title while preserving its selection checkmark. Return
+`nil` for ordinary options, and enforce access in `setCurrent(_:)`; badges are
+presentation only. The list refreshes when settings or membership status changes.
 
 ## Membership & Entitlements
 
@@ -293,3 +305,5 @@ NotificationCenter.default.addObserver(
 ## Localization
 
 MoreKit includes localizations for: English, Simplified Chinese, Traditional Chinese (Taiwan & Hong Kong), Arabic, German, Spanish (Spain & Latin America), French, Italian, Japanese, Korean, Portuguese (Brazil & Portugal), Russian, and Ukrainian.
+
+`MoreCustomItem(showsDisclosureIndicator: false)` 用于只读状态行：隐藏箭头和选中效果，并忽略点击。默认值为 `true`，保持原有导航行为。

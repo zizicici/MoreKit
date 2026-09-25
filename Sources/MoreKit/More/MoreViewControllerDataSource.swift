@@ -34,19 +34,22 @@ public struct MoreCustomItem: Hashable {
     public let title: String
     public let value: String?
     public let badge: MoreBadgeStyle?
+    public let showsDisclosureIndicator: Bool
     let builtInAction: BuiltInAction?
 
     public init(
         id: String,
         title: String,
         value: String? = nil,
-        badge: MoreBadgeStyle? = nil
+        badge: MoreBadgeStyle? = nil,
+        showsDisclosureIndicator: Bool = true
     ) {
         self.init(
             id: id,
             title: title,
             value: value,
             badge: badge,
+            showsDisclosureIndicator: showsDisclosureIndicator,
             builtInAction: nil
         )
     }
@@ -56,12 +59,14 @@ public struct MoreCustomItem: Hashable {
         title: String,
         value: String? = nil,
         badge: MoreBadgeStyle? = nil,
+        showsDisclosureIndicator: Bool = true,
         builtInAction: BuiltInAction? = nil
     ) {
         self.id = id
         self.title = title
         self.value = value
         self.badge = badge
+        self.showsDisclosureIndicator = showsDisclosureIndicator
         self.builtInAction = builtInAction
     }
 }
@@ -98,9 +103,15 @@ public protocol MoreViewControllerDataSource: AnyObject {
     func sections(for controller: MoreViewController) -> [MoreSectionType]
     func moreViewController(_ controller: MoreViewController, didSelectCustomItem item: MoreCustomItem)
     func additionalReloadNotifications() -> [Notification.Name]
+    /// Custom rows appended to the built-in About section. Selection uses didSelectCustomItem.
+    func additionalAboutItems(for controller: MoreViewController) -> [MoreCustomItem]
 }
 
 extension MoreViewControllerDataSource {
+    public func additionalAboutItems(for controller: MoreViewController) -> [MoreCustomItem] {
+        []
+    }
+
     public func additionalReloadNotifications() -> [Notification.Name] {
         return []
     }

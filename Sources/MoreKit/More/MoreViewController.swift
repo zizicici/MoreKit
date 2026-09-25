@@ -211,7 +211,8 @@ public class MoreViewController: UIViewController {
                     return cell
                 }
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-                cell.accessoryType = .disclosureIndicator
+                cell.accessoryType = item.showsDisclosureIndicator ? .disclosureIndicator : .none
+                cell.selectionStyle = item.showsDisclosureIndicator ? .default : .none
                 var content = UIListContentConfiguration.valueCell()
                 content.text = item.title
                 content.textProperties.color = .label
@@ -222,6 +223,7 @@ public class MoreViewController: UIViewController {
             case .contact(let item):
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
                 cell.accessoryType = .disclosureIndicator
+                cell.selectionStyle = .default
                 var content = UIListContentConfiguration.valueCell()
                 content.text = item.title
                 content.textProperties.color = .label
@@ -237,11 +239,13 @@ public class MoreViewController: UIViewController {
                     cell.update(app)
                 }
                 cell.accessoryType = .disclosureIndicator
+                cell.selectionStyle = .default
                 return cell
 
             case .showcaseMore:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
                 cell.accessoryType = .disclosureIndicator
+                cell.selectionStyle = .default
                 var content = UIListContentConfiguration.valueCell()
                 content.text = identifier.title
                 content.textProperties.color = .label
@@ -251,6 +255,7 @@ public class MoreViewController: UIViewController {
             case .aboutSpecifications, .aboutShare, .aboutReview, .aboutEULA, .aboutPrivacyPolicy:
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
                 cell.accessoryType = .disclosureIndicator
+                cell.selectionStyle = .default
                 var content = UIListContentConfiguration.valueCell()
                 content.text = identifier.title
                 content.textProperties.color = .label
@@ -289,6 +294,14 @@ public class MoreViewController: UIViewController {
             }
         }
 
+        // Diffable snapshots don't refresh supplementary text when section IDs
+        // remain unchanged, even if their rows change (e.g. loading to an error).
+        let previousSections = Set(diffableDataSource.snapshot().sectionIdentifiers)
+        let changedSections = snapshot.sectionIdentifiers.filter {
+            previousSections.contains($0) && (diffableDataSource.sectionHeaders[$0] != headers[$0]
+                || diffableDataSource.sectionFooters[$0] != footers[$0])
+        }
+        snapshot.reloadSections(changedSections)
         diffableDataSource.sectionHeaders = headers
         diffableDataSource.sectionFooters = footers
         diffableDataSource.apply(snapshot, animatingDifferences: false)
@@ -387,6 +400,7 @@ public class MoreViewController: UIViewController {
         if configuration.privacyPolicyURL != nil {
             items.append(.aboutPrivacyPolicy)
         }
+        items.append(contentsOf: (dataSource?.additionalAboutItems(for: self) ?? []).map { .custom($0) })
 
         snapshot.appendItems(items, toSection: .about)
     }
@@ -403,6 +417,7 @@ extension MoreViewController: UITableViewDelegate {
         case .promotion, .thanks:
             break
         case .custom(let customItem):
+            guard customItem.showsDisclosureIndicator else { return }
             dataSource?.moreViewController(self, didSelectCustomItem: customItem)
             if handleBuiltInAction(for: customItem) {
                 return

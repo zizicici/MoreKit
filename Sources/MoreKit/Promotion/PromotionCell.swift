@@ -131,7 +131,7 @@ public class PromotionCell: UITableViewCell, PromotionCellConfigurable {
         featureStackView.snp.makeConstraints { make in
             make.top.equalTo(topLabel.snp.bottom).offset(12)
             make.leading.equalTo(contentView).inset(22)
-            make.trailing.equalTo(restoreButton.snp.leading).offset(-4)
+            make.trailing.equalTo(purchaseButton.snp.leading).offset(-12)
             make.bottom.equalTo(contentView).inset(20)
         }
 

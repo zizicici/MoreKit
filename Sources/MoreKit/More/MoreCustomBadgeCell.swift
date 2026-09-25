@@ -22,6 +22,8 @@ final class MoreCustomBadgeCell: UITableViewCell {
 
     func configure(item: MoreCustomItem) {
         pendingItem = item
+        accessoryType = item.showsDisclosureIndicator ? .disclosureIndicator : .none
+        selectionStyle = item.showsDisclosureIndicator ? .default : .none
         setNeedsUpdateConfiguration()
     }
 

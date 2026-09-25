@@ -7,6 +7,11 @@
 import UIKit
 import SnapKit
 
+/// Adopt to show an optional badge beside individual settings options.
+public protocol SettingsOptionBadgeProviding: SettingsOption {
+    func getBadge() -> MoreBadgeStyle?
+}
+
 public class SettingOptionsViewController<T: SettingsOption>: UIViewController, UITableViewDelegate {
     private var tableView: UITableView!
     private var dataSource: DataSource!
@@ -58,12 +63,15 @@ public class SettingOptionsViewController<T: SettingsOption>: UIViewController, 
         configureHierarchy()
         configureDataSource()
         reloadData()
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .SettingsUpdate, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreInfoLoaded, object: nil)
     }
 
     func configureHierarchy() {
         tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = MoreKitAppearance.shared.backgroundColor
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "reuseIdentifier")
+        tableView.register(MoreCustomBadgeCell.self, forCellReuseIdentifier: MoreCustomBadgeCell.reuseIdentifier)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 50.0
@@ -81,6 +89,14 @@ public class SettingOptionsViewController<T: SettingsOption>: UIViewController, 
             guard let identifier = dataSource.itemIdentifier(for: indexPath) else { return nil }
             switch identifier {
             case .option(let item, let isSelected):
+                if let badge = (item as? any SettingsOptionBadgeProviding)?.getBadge(),
+                   let cell = tableView.dequeueReusableCell(withIdentifier: MoreCustomBadgeCell.reuseIdentifier, for: indexPath) as? MoreCustomBadgeCell {
+                    cell.configure(item: MoreCustomItem(id: "option", title: item.getName(), badge: badge))
+                    cell.accessoryType = isSelected ? .checkmark : .none
+                    cell.tintColor = MoreKitAppearance.shared.tintColor
+                    cell.accessibilityLabel = "\(item.getName()), \(badge.text)"
+                    return cell
+                }
                 let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
                 cell.accessoryType = isSelected ? .checkmark : .none
                 cell.tintColor = MoreKitAppearance.shared.tintColor
