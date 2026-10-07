@@ -27,10 +27,10 @@ public class User {
         // cold start), so they must never clobber the value written by the main app.
         guard MoreKit.ownsStoreKit else { return }
         guard let defaults = membershipUserDefaults else { return }
-        let current = Store.shared.hasValidMembership()
-        if defaults.bool(forKey: MoreKit.membershipKey) != current {
-            defaults.setValue(current, forKey: MoreKit.membershipKey)
-        }
+        MembershipCache(defaults: defaults, key: MoreKit.membershipKey).write(
+            lifetime: Store.shared.proTier() == .lifetime,
+            subscriptions: Store.shared.activeSubscriptions()
+        )
     }
 
     public func proTier() -> ProTier {
@@ -39,12 +39,10 @@ public class User {
         // Guard on a registered product: with no product, Store can't reflect membership, so fall through
         // to the cache for parity. Read-only consumers (extensions) don't run StoreKit, so they too read
         // the cached value the main app wrote.
-        if MoreKit.ownsStoreKit, MoreKit.productID != nil {
+        if MoreKit.ownsStoreKit, !MoreKit.membershipProductIDs.isEmpty {
             return Store.shared.proTier()
         }
-        if membershipUserDefaults?.bool(forKey: MoreKit.membershipKey) == true {
-            return .lifetime
-        }
-        return Store.shared.proTier()
+        guard let defaults = membershipUserDefaults else { return .none }
+        return MembershipCache(defaults: defaults, key: MoreKit.membershipKey).tier()
     }
 }

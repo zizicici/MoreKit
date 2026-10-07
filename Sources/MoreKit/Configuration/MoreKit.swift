@@ -7,6 +7,14 @@ import Foundation
 
 public enum MoreKit {
     internal static var productID: String?
+    internal static var subscriptionProductIDs: [String] = []
+    public static var supportsSubscriptions: Bool { !subscriptionProductIDs.isEmpty }
+
+    /// All products that unlock the same membership, in the host app's display order.
+    /// `productID` remains the optional lifetime non-consumable; subscriptions are opt-in.
+    public static var membershipProductIDs: [String] {
+        (productID.map { [$0] } ?? []) + subscriptionProductIDs
+    }
     internal static var appGroupID: String?
     internal static var membershipKey: String = "com.zizicici.morekit.Store.LifetimeMembership"
     internal private(set) static var ownsStoreKit: Bool = false
@@ -34,6 +42,7 @@ public enum MoreKit {
     @available(macOSApplicationExtension, unavailable, message: "App extensions must use MoreKit.configureForReadOnlyAccess(appGroupID:membershipKey:) — extensions cannot run StoreKit.")
     public static func configure(
         productID: String? = nil,
+        subscriptionProductIDs: [String] = [],
         appGroupID: String? = nil,
         membershipKey: String? = nil
     ) {
@@ -41,6 +50,8 @@ public enum MoreKit {
         isConfigured = true
 
         self.productID = productID
+        var seen = Set(productID.map { [$0] } ?? [])
+        self.subscriptionProductIDs = subscriptionProductIDs.filter { !$0.isEmpty && seen.insert($0).inserted }
         self.appGroupID = appGroupID
         if let membershipKey {
             self.membershipKey = membershipKey

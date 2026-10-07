@@ -6,8 +6,14 @@
 import Combine
 import Foundation
 import StoreKit
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 extension Notification.Name {
+    public static let MembershipActivated = Notification.Name(rawValue: "com.zizicici.morekit.store.membership.activated")
     public static let LifetimeMembership = Notification.Name(rawValue: "com.zizicici.morekit.store.purchase.lifetime")
     public static let StoreInfoLoaded = Notification.Name(rawValue: "com.zizicici.morekit.store.info.loaded")
     public static let StoreProductsLoaded = Notification.Name(rawValue: "com.zizicici.morekit.store.products.loaded")
@@ -30,6 +36,7 @@ extension StoreError: LocalizedError {
 }
 
 public enum ProTier: Sendable {
+    case subscription
     case lifetime
     case none
 }
@@ -43,30 +50,35 @@ public enum PurchaseOutcome: Sendable {
 
 private final class StoreStateSnapshot: @unchecked Sendable {
     private let lock = NSLock()
-    private var hasValidMembership = false
+    private var lifetime = false
+    private var subscriptions: [SubscriptionMembership] = []
     private var membershipDisplayPrice: String?
 
-    func update(hasValidMembership: Bool, membershipDisplayPrice: String?) {
+    func update(lifetime: Bool, subscriptions: [SubscriptionMembership], membershipDisplayPrice: String?) {
         lock.lock()
-        self.hasValidMembership = hasValidMembership
+        self.lifetime = lifetime
+        self.subscriptions = subscriptions
         self.membershipDisplayPrice = membershipDisplayPrice
         lock.unlock()
     }
 
-    func hasValidMembershipValue() -> Bool {
+    func proTierValue() -> ProTier {
         lock.lock()
         defer { lock.unlock() }
-        return hasValidMembership
+        if lifetime { return .lifetime }
+        return subscriptions.contains { $0.isActive() } ? .subscription : .none
+    }
+
+    func subscriptionValues() -> [SubscriptionMembership] {
+        lock.lock()
+        defer { lock.unlock() }
+        return subscriptions
     }
 
     func membershipDisplayPriceValue() -> String? {
         lock.lock()
         defer { lock.unlock() }
         return membershipDisplayPrice
-    }
-
-    func proTierValue() -> ProTier {
-        hasValidMembershipValue() ? .lifetime : .none
     }
 }
 
@@ -106,6 +118,15 @@ public class Store: ObservableObject {
     private static let syncMissingEntitlementRetryDelayNanoseconds: UInt64 = 300_000_000
 
     @Published public private(set) var memberships: [Product] = []
+    @Published public private(set) var isLoadingProducts = false
+    @Published public private(set) var productsError: Error?
+    private var subscriptions: [String: SubscriptionMembership] = [:]
+    private var subscriptionGeneration = 0
+    private var subscriptionRefreshTask: Task<Void, Never>?
+    private var subscriptionRefreshRequested = false
+    private var expirationTask: Task<Void, Never>?
+    private var activationObserver: NSObjectProtocol?
+
 
     @Published public private(set) var purchasedProductIDs: Set<String> = [] {
         didSet {
@@ -131,8 +152,9 @@ public class Store: ObservableObject {
 
     private func refreshSnapshot() {
         snapshot.update(
-            hasValidMembership: !purchasedProductIDs.isEmpty,
-            membershipDisplayPrice: memberships.first?.displayPrice
+            lifetime: MoreKit.productID.map { purchasedProductIDs.contains($0) } ?? false,
+            subscriptions: Array(subscriptions.values),
+            membershipDisplayPrice: memberships.first { $0.id == MoreKit.productID }?.displayPrice
         )
     }
 
@@ -143,6 +165,16 @@ public class Store: ObservableObject {
         updateListenerTask = listenForTransactions()
         Task { await updateCustomerProductStatus() }
         Task { await requestProducts() }
+        #if canImport(UIKit)
+        let activation = UIApplication.didBecomeActiveNotification
+        #elseif canImport(AppKit)
+        let activation = NSApplication.didBecomeActiveNotification
+        #endif
+        #if canImport(UIKit) || canImport(AppKit)
+        activationObserver = NotificationCenter.default.addObserver(forName: activation, object: nil, queue: nil) { [weak self] _ in
+            Task { @MainActor in await self?.updateCustomerProductStatus() }
+        }
+        #endif
     }
 
     public func retryRequestProducts() {
@@ -177,31 +209,59 @@ public class Store: ObservableObject {
         }
     }
 
-    func requestProducts() async {
-        guard let productID = MoreKit.productID else { return }
-
+    public func requestProducts() async {
+        guard !isLoadingProducts, !MoreKit.membershipProductIDs.isEmpty else { return }
+        isLoadingProducts = true
+        productsError = nil
+        NotificationCenter.default.post(name: .StoreProductsLoaded, object: nil)
         do {
-            let products = try await Product.products(for: [productID])
-            let filtered = products.filter { $0.type == .nonConsumable }
-            if memberships != filtered {
-                memberships = filtered
-                refreshSnapshot()
-                NotificationCenter.default.post(name: .StoreProductsLoaded, object: nil)
-            } else {
-                refreshSnapshot()
+            let products = try await Product.products(for: MoreKit.membershipProductIDs)
+            memberships = MoreKit.membershipProductIDs.compactMap { id in
+                products.first { $0.id == id && isRegisteredProduct(id: id, type: $0.type) }
+            }
+            if memberships.count != MoreKit.membershipProductIDs.count {
+                productsError = StoreError.productsUnavailable
             }
         } catch {
-            print(error)
+            productsError = error
         }
+        isLoadingProducts = false
+        refreshSnapshot()
+        NotificationCenter.default.post(name: .StoreProductsLoaded, object: nil)
+        // Product metadata gives access to renewal status, including billing grace periods.
+        await refreshSubscriptions()
+    }
+
+    private func isRegisteredProduct(id: String, type: Product.ProductType) -> Bool {
+        (id == MoreKit.productID && type == .nonConsumable)
+            || (MoreKit.subscriptionProductIDs.contains(id) && type == .autoRenewable)
+    }
+
+    /// Purchase a configured product. Lifetime ownership prevents another membership purchase;
+    /// subscribers may still buy lifetime access. Plan changes are managed through the App Store.
+    public func purchase(productID: String) async throws -> PurchaseOutcome {
+        guard let product = memberships.first(where: { $0.id == productID }) else {
+            throw StoreError.productsUnavailable
+        }
+        if proTier() == .lifetime || activeSubscriptions().contains(where: { $0.productID == productID }) {
+            return .alreadyOwned
+        }
+        return try await purchase(product)
     }
 
     internal func purchase(_ product: Product) async throws -> PurchaseOutcome {
+        guard isRegisteredProduct(id: product.id, type: product.type) else { throw StoreError.productsUnavailable }
         let result = try await product.purchase()
 
         switch result {
         case .success(let verification):
             let transaction = try Self.checkVerified(verification)
-            applyVerifiedMembershipTransaction(transaction)
+            if transaction.productType == .autoRenewable {
+                applySubscriptionTransaction(transaction)
+                await refreshSubscriptions()
+            } else {
+                applyVerifiedMembershipTransaction(transaction)
+            }
             await transaction.finish()
             return .success(transaction)
         case .pending:
@@ -215,6 +275,7 @@ public class Store: ObservableObject {
 
     public func updateCustomerProductStatus() async {
         await refreshCustomerProductStatus()
+        await refreshSubscriptions()
     }
 
     // MARK: - Cache hydration
@@ -228,10 +289,18 @@ public class Store: ObservableObject {
     /// ``applyMembership(_:)``): reflecting already-known cached membership is not a new acquisition, so it
     /// must not post `.LifetimeMembership` or re-write the cache.
     private func hydrateMembershipFromCacheIfNeeded() {
-        guard purchasedProductIDs.isEmpty,
-              cachedMembershipValue(),
-              let registeredID = MoreKit.productID else { return }
-        purchasedProductIDs.insert(registeredID)
+        if purchasedProductIDs.isEmpty, cachedMembershipValue(), let registeredID = MoreKit.productID {
+            purchasedProductIDs.insert(registeredID)
+        }
+        if let defaults = MoreKit.membershipDefaults {
+            for membership in MembershipCache(defaults: defaults, key: MoreKit.membershipKey).subscriptions
+                where MoreKit.subscriptionProductIDs.contains(membership.productID) && membership.isActive() {
+                subscriptions[membership.productID] = membership
+                purchasedProductIDs.insert(membership.productID)
+            }
+        }
+        refreshSnapshot()
+        scheduleSubscriptionExpiration()
     }
 
     // MARK: - Membership mutation
@@ -241,11 +310,13 @@ public class Store: ObservableObject {
     /// `purchasedProductIDs` directly, with `.LifetimeMembership` suppressed.)
     internal func applyMembership(_ isMember: Bool) {
         guard let registeredID = MoreKit.productID else { return }
-        let ids: Set<String> = isMember ? [registeredID] : []
+        var ids = purchasedProductIDs
+        if isMember { ids.insert(registeredID) } else { ids.remove(registeredID) }
         if isMember {
             grantGeneration &+= 1   // record a positive-proof grant so a concurrent reconcile won't clear over it
         }
-        let wasEmpty = purchasedProductIDs.isEmpty
+        let hadLifetime = purchasedProductIDs.contains(registeredID)
+        let wasMember = hasValidMembership()
         guard purchasedProductIDs != ids else {
             refreshSnapshot()
             return
@@ -255,8 +326,11 @@ public class Store: ObservableObject {
         // `.LifetimeMembership`, so an observer of "newly a member" sees both the live snapshot AND the
         // durable (app-group) cache already updated.
         NotificationCenter.default.post(name: .StoreInfoLoaded, object: nil)
-        if wasEmpty, !ids.isEmpty {
+        if !hadLifetime, isMember {
             NotificationCenter.default.post(name: .LifetimeMembership, object: nil)
+        }
+        if !wasMember, hasValidMembership() {
+            NotificationCenter.default.post(name: .MembershipActivated, object: nil)
         }
     }
 
@@ -273,6 +347,13 @@ public class Store: ObservableObject {
     /// product (and therefore handled here and should be finished), `false` if it belongs to some other
     /// IAP the host app sells — those are left untouched for the host's own listener.
     private func applyVerifiedMembershipUpdate(_ transaction: Transaction) async -> Bool {
+        if MoreKit.subscriptionProductIDs.contains(transaction.productID), transaction.productType == .autoRenewable {
+            if transaction.revocationDate == nil, !transaction.isUpgraded {
+                applySubscriptionTransaction(transaction)
+            }
+            await refreshSubscriptions()
+            return true
+        }
         guard let registeredID = MoreKit.productID,
               transaction.productID == registeredID,
               transaction.productType == .nonConsumable else { return false }
@@ -296,6 +377,7 @@ public class Store: ObservableObject {
     /// Test seam: when set, replaces the real StoreKit scan, letting unit tests drive
     /// `refreshCustomerProductStatus` without a live StoreKit environment. Compiled out of release
     /// builds; never set in production.
+    private var subscriptionScanOverride: (@MainActor () async -> [String: SubscriptionScanOutcome])?
     internal var scanOverrideForTesting: (@MainActor () async -> EntitlementScanOutcome)?
     #endif
 
@@ -389,17 +471,13 @@ public class Store: ObservableObject {
 
 extension Store {
     public func purchaseLifetimeMembership() async throws -> PurchaseOutcome {
-        guard purchasedProductIDs.isEmpty else {
-            return .alreadyOwned
-        }
-        guard let membership = memberships.first else {
-            throw StoreError.productsUnavailable
-        }
-        return try await purchase(membership)
+        if proTier() == .lifetime { return .alreadyOwned }
+        guard let productID = MoreKit.productID else { throw StoreError.productsUnavailable }
+        return try await purchase(productID: productID)
     }
 
     public nonisolated func hasValidMembership() -> Bool {
-        return snapshot.hasValidMembershipValue()
+        return snapshot.proTierValue() != .none
     }
 
     public nonisolated func proTier() -> ProTier {
@@ -410,7 +488,7 @@ extension Store {
         _ = try await syncMembershipStatus()
     }
 
-    func syncMembershipStatus() async throws -> Bool {
+    public func syncMembershipStatus() async throws -> Bool {
         var syncError: Error?
         do {
             try await AppStore.sync()
@@ -422,6 +500,7 @@ extension Store {
         await refreshCustomerProductStatus(
             retryMissingAttempts: syncError == nil ? Self.syncMissingEntitlementRetryCount : 0
         )
+        await refreshSubscriptions()
         // If the refresh established membership (e.g. found the purchase locally), report success even
         // when the server sync failed; only surface the sync error if we still cannot confirm membership.
         if let syncError, !hasValidMembership() {
@@ -430,7 +509,154 @@ extension Store {
         return hasValidMembership()
     }
 
+    public nonisolated func activeSubscriptions() -> [SubscriptionMembership] {
+        snapshot.subscriptionValues().filter { $0.isActive() }.sorted { $0.productID < $1.productID }
+    }
+
     public nonisolated func membershipDisplayPrice() -> String? {
         return snapshot.membershipDisplayPriceValue()
+    }
+}
+
+extension Store {
+    private func applySubscriptionTransaction(_ transaction: Transaction) {
+        guard MoreKit.subscriptionProductIDs.contains(transaction.productID),
+              transaction.productType == .autoRenewable,
+              transaction.revocationDate == nil, !transaction.isUpgraded,
+              let expiration = transaction.expirationDate, expiration > Date() else { return }
+        // A delayed update for an older period must not shorten a newer entitlement or grace period.
+        if let current = subscriptions[transaction.productID], current.accessExpirationDate >= expiration { return }
+        applySubscriptionOutcomes([transaction.productID: .active(.init(
+            productID: transaction.productID, expirationDate: expiration
+        ))])
+    }
+
+    #if DEBUG
+    internal var subscriptionScanOverrideForTesting: (@MainActor () async -> [String: SubscriptionScanOutcome])? {
+        get { subscriptionScanOverride }
+        set { subscriptionScanOverride = newValue }
+    }
+    #endif
+
+    internal func refreshSubscriptions() async {
+        guard !MoreKit.subscriptionProductIDs.isEmpty else { return }
+        if let task = subscriptionRefreshTask {
+            subscriptionRefreshRequested = true
+            await task.value
+            return
+        }
+        // Serialize scans so each can use the previous scan's verified grace period.
+        // Coalesce overlapping requests into a follow-up scan; every caller waits
+        // for that scan too, including Restore callers that then report membership.
+        let task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            repeat {
+                self.subscriptionRefreshRequested = false
+                await self.scanAndApplySubscriptions()
+            } while self.subscriptionRefreshRequested
+            self.subscriptionRefreshTask = nil
+        }
+        subscriptionRefreshTask = task
+        await task.value
+    }
+
+    private func scanAndApplySubscriptions() async {
+        let generation = subscriptionGeneration
+        var outcomes: [String: SubscriptionScanOutcome] = [:]
+        #if DEBUG
+        if let subscriptionScanOverrideForTesting {
+            outcomes = await subscriptionScanOverrideForTesting()
+        } else {
+            for id in MoreKit.subscriptionProductIDs { outcomes[id] = await scanSubscription(productID: id) }
+        }
+        #else
+        for id in MoreKit.subscriptionProductIDs { outcomes[id] = await scanSubscription(productID: id) }
+        #endif
+        // A direct purchase/update still takes precedence over a pre-purchase scan.
+        guard generation == subscriptionGeneration else { return }
+        applySubscriptionOutcomes(outcomes)
+    }
+
+    private func scanSubscription(productID: String) async -> SubscriptionScanOutcome {
+        var fallback: SubscriptionScanOutcome = .missing
+        var groupID = memberships.first(where: { $0.id == productID })?.subscription?.subscriptionGroupID
+        if let result = await Transaction.latest(for: productID),
+           let transaction = try? Self.checkVerified(result), transaction.productType == .autoRenewable {
+            groupID = transaction.subscriptionGroupID ?? groupID
+            if transaction.revocationDate != nil || transaction.isUpgraded {
+                fallback = .inactive
+            } else if let expiration = transaction.expirationDate, expiration > Date() {
+                fallback = .active(.init(productID: productID, expirationDate: expiration))
+            } else if transaction.expirationDate != nil {
+                let cachedGrace = subscriptions[productID]?.gracePeriodExpirationDate
+                fallback = cachedGrace.map { $0 > Date() } == true ? .missing : .inactive
+            }
+            // An expired transaction alone does not disprove a previously verified billing grace
+            // period. With no renewal status, retain cached access only up to its signed deadline.
+        }
+        // Transaction metadata is available on a cold/offline launch even when
+        // Product.products has not loaded. Grace is carried by the group status.
+        guard let groupID,
+              let statuses = try? await Product.SubscriptionInfo.status(for: groupID) else { return fallback }
+        var best: SubscriptionMembership?
+        var observedInactive = false
+        for status in statuses {
+            guard let transaction = try? Self.checkVerified(status.transaction),
+                  transaction.productID == productID,
+                  let renewal = try? Self.checkVerified(status.renewalInfo) else { continue }
+            guard transaction.revocationDate == nil, !transaction.isUpgraded,
+                  let expiration = transaction.expirationDate else {
+                observedInactive = true
+                continue
+            }
+            let grace = status.state == .inGracePeriod ? renewal.gracePeriodExpirationDate : nil
+            let value = SubscriptionMembership(productID: productID, expirationDate: expiration,
+                                               gracePeriodExpirationDate: grace, willAutoRenew: renewal.willAutoRenew)
+            if (status.state == .subscribed || status.state == .inGracePeriod), value.isActive() {
+                if best == nil || value.accessExpirationDate > best!.accessExpirationDate { best = value }
+            } else {
+                observedInactive = true
+            }
+        }
+        if let best { return .active(best) }
+        return observedInactive ? .inactive : fallback
+    }
+
+    internal func applySubscriptionOutcomes(_ outcomes: [String: SubscriptionScanOutcome], now: Date = Date()) {
+        let previous = subscriptions
+        let wasMember = hasValidMembership()
+        subscriptionGeneration &+= 1
+        for (id, outcome) in outcomes where MoreKit.subscriptionProductIDs.contains(id) {
+            switch outcome {
+            case .active(let membership): subscriptions[id] = membership
+            case .inactive: subscriptions.removeValue(forKey: id)
+            case .missing: break
+            }
+        }
+        subscriptions = subscriptions.filter { $0.value.isActive(at: now) }
+        var ids = purchasedProductIDs.subtracting(MoreKit.subscriptionProductIDs)
+        ids.formUnion(subscriptions.keys)
+        purchasedProductIDs = ids
+        scheduleSubscriptionExpiration()
+        if subscriptions != previous {
+            NotificationCenter.default.post(name: .StoreInfoLoaded, object: nil)
+            if !wasMember, hasValidMembership() {
+                NotificationCenter.default.post(name: .MembershipActivated, object: nil)
+            }
+        }
+    }
+
+    private func scheduleSubscriptionExpiration() {
+        expirationTask?.cancel()
+        guard let next = subscriptions.values.map(\.accessExpirationDate).min() else { return }
+        // Recheck long subscriptions daily, as well as on app activation and transaction updates.
+        let delay = min(max(next.timeIntervalSinceNow, 0.05), 86_400)
+        expirationTask = Task { [weak self] in
+            do { try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) }
+            catch { return }
+            guard let self else { return }
+            self.applySubscriptionOutcomes([:])
+            await self.refreshSubscriptions()
+        }
     }
 }

@@ -13,6 +13,8 @@ public protocol SettingsOptionBadgeProviding: SettingsOption {
 }
 
 public class SettingOptionsViewController<T: SettingsOption>: UIViewController, UITableViewDelegate {
+    /// Return true when the host has presented its own recovery UI.
+    public var errorHandler: ((UIViewController, Error) -> Bool)?
     private var tableView: UITableView!
     private var dataSource: DataSource!
 
@@ -63,8 +65,8 @@ public class SettingOptionsViewController<T: SettingsOption>: UIViewController, 
         configureHierarchy()
         configureDataSource()
         reloadData()
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .SettingsUpdate, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreInfoLoaded, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(observedDataChanged), name: .SettingsUpdate, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(observedDataChanged), name: .StoreInfoLoaded, object: nil)
     }
 
     func configureHierarchy() {
@@ -109,6 +111,10 @@ public class SettingOptionsViewController<T: SettingsOption>: UIViewController, 
         }
     }
 
+    @objc nonisolated private func observedDataChanged() {
+        Task { @MainActor [weak self] in self?.reloadData() }
+    }
+
     @objc
     func reloadData() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
@@ -130,6 +136,7 @@ public class SettingOptionsViewController<T: SettingsOption>: UIViewController, 
             do {
                 try T.setCurrent(item)
             } catch {
+                if errorHandler?(self, error) == true { return }
                 showAlert(title: nil, message: error.localizedDescription)
                 return
             }

@@ -1,6 +1,6 @@
 # MoreKit
 
-A Swift package for StoreKit 2 lifetime membership, app metadata, localized resources, and a fully-featured UIKit "More" tab. The StoreKit and data APIs support both iOS and macOS; UIKit controllers remain iOS-specific.
+A Swift package for StoreKit 2 lifetime and subscription membership, app metadata, localized resources, and a fully-featured UIKit "More" tab. The StoreKit and data APIs support both iOS and macOS; UIKit controllers remain iOS-specific.
 
 ## Requirements
 
@@ -197,6 +197,13 @@ These rows use the same rendering and `didSelectCustomItem` callback as custom
 sections, and their IDs must be unique across the page. They appear only when
 the data source includes `.about` in its sections.
 
+For a host-owned membership card or another custom row, implement
+`moreViewController(_:cellFor:)` and return a `UITableViewCell`. Return `nil`
+to keep MoreKit's standard rendering. Row selection still uses
+`didSelectCustomItem`; embedded buttons should route through the host's same
+navigation action. Include changing display state in the `MoreCustomItem`
+value so snapshot updates refresh the card.
+
 ### Custom Promotion / Grateful Cells
 
 Conform to `PromotionCellConfigurable` or `GratefulCellConfigurable` to provide fully custom cell implementations:
@@ -239,9 +246,62 @@ badge beside the option title while preserving its selection checkmark. Return
 `nil` for ordinary options, and enforce access in `setCurrent(_:)`; badges are
 presentation only. The list refreshes when settings or membership status changes.
 
+Set `MoreViewController.settingsErrorHandler` to offer host-owned recovery UI,
+such as an upgrade choice for a restricted option. It receives the options
+controller and error; return `true` when handled, or `false` for the standard
+alert. `enterSettings(_:)` forwards this handler to the options page. A directly
+created `SettingOptionsViewController` can use its `errorHandler` property.
+
 ## Membership & Entitlements
 
-MoreKit manages a single **lifetime non-consumable** purchase (StoreKit 2) and exposes the result as a `ProTier` (`.lifetime` / `.none`). The membership section, purchase flow, and restore are wired up automatically once `productID` is configured.
+MoreKit supports an optional **lifetime non-consumable** and any number of **auto-renewable subscriptions** that unlock the same membership. `ProTier` is `.lifetime`, `.subscription`, or `.none`; lifetime takes precedence when both are owned. Callers with exhaustive switches must handle the new `.subscription` case.
+
+Existing lifetime-only apps keep using `configure(productID:)`, `purchaseLifetimeMembership()`, and their existing promotion/grateful cells unchanged. Subscriptions are opt-in; paywall UI belongs to the host app. Non-renewing subscriptions and consumables are not membership products.
+
+```swift
+// Lifetime only: existing configuration still works.
+MoreKit.configure(productID: "com.example.lifetime")
+
+// Alternatively, configure lifetime plus subscriptions:
+MoreKit.configure(
+    productID: "com.example.lifetime",
+    subscriptionProductIDs: ["com.example.monthly", "com.example.yearly"],
+    appGroupID: "group.com.example.app"
+)
+// For subscription-only apps, omit productID.
+// These are alternatives: call configure exactly once.
+```
+
+Subscriptions must be set up in App Store Connect. MoreKit does not create products, choose prices, or update a host app's server-side receipt validation. All registered products must grant the same access; put interchangeable subscription plans in the same subscription group.
+
+### Host-owned paywall
+
+MoreKit supplies purchasing and entitlement capabilities. The host app owns its paywall controller, layout, copy, plan order, and navigation. A lifetime-only app may keep its existing MoreKit promotion/grateful cells, or replace the `.membership` section with a `.custom` section using the existing `MoreViewControllerDataSource` API to open its own page. Apps offering subscriptions should provide their own plan-selection UI; MoreKit does not ship a paywall.
+
+```swift
+await Store.shared.requestProducts()
+let products = Store.shared.memberships // configured order, verified product types
+let outcome = try await Store.shared.purchase(productID: selectedProduct.id)
+switch outcome {
+case .success: /* refresh or dismiss your UI */ break
+case .pending: /* explain pending approval without granting access */ break
+case .cancelled: break
+case .alreadyOwned: break
+}
+let restored = try await Store.shared.syncMembershipStatus()
+```
+
+Use `isLoadingProducts`, `productsError`, and `.StoreProductsLoaded` for loading/retry UI. Display StoreKit's `Product.displayPrice` and `subscription.subscriptionPeriod`, and supply your app's privacy policy and terms. `membershipDisplayPrice()` continues to mean the lifetime product's price. Use `supportsSubscriptions` to avoid subscription copy and controls in lifetime-only apps. `AppStore.showManageSubscriptions(in:)` opens Apple's management UI.
+
+Buying lifetime access does not cancel an existing subscription. A host paywall should make that clear and let existing subscribers manage renewal. Introductory-offer copy requires checking eligibility; product metadata alone is not proof of eligibility.
+
+### Subscription state
+
+`activeSubscriptions()` exposes verified expiration, optional grace-period expiration, and optional auto-renewal intent. Canceling renewal keeps access through the paid period. A verified billing grace period grants access until its own deadline; billing retry without grace does not. Missing StoreKit data can preserve cached subscription access only until the known expiration, never indefinitely. Refunds and upgrades are reconciled per product and cannot clear separately owned lifetime access.
+
+The store refreshes on launch, transactions, app activation, restore, and expiration. Synchronous membership reads also check the clock, including in read-only extensions. Subscription cache data is stored separately under `membershipKey + ".subscriptions.v1"`; the existing Boolean remains **lifetime only**, so an older lifetime-only reader cannot mistake a subscription for a permanent purchase. Upgrade extensions to this MoreKit version to recognize subscription access.
+
+The rules below concerning sticky ownership apply specifically to the **lifetime product**.
 
 ### Reading membership state
 
@@ -281,9 +341,10 @@ Refunds and Family Sharing removal arrive as revoked transactions on `Transactio
 
 | Name | Posted when |
 |---|---|
-| `.LifetimeMembership` | Membership becomes active — `purchasedProductIDs` transitions from empty to non-empty (a purchase, or a restore/reconciliation that first finds the entitlement). Not posted on launch cache hydration. |
+| `.LifetimeMembership` | Lifetime ownership is first established, including upgrading from a subscription. Not posted on cache hydration. |
+| `.MembershipActivated` | Access changes from no active membership to active lifetime or subscription access. Not posted on cache hydration. |
 | `.StoreInfoLoaded` | Membership state changes (granted or cleared). |
-| `.StoreProductsLoaded` | Products load / price becomes available. |
+| `.StoreProductsLoaded` | Product loading state changes, including load failures, for retry/loading UI. |
 
 ```swift
 NotificationCenter.default.addObserver(
@@ -307,3 +368,7 @@ NotificationCenter.default.addObserver(
 MoreKit includes localizations for: English, Simplified Chinese, Traditional Chinese (Taiwan & Hong Kong), Arabic, German, Spanish (Spain & Latin America), French, Italian, Japanese, Korean, Portuguese (Brazil & Portugal), Russian, and Ukrainian.
 
 `MoreCustomItem(showsDisclosureIndicator: false)` 用于只读状态行：隐藏箭头和选中效果，并忽略点击。默认值为 `true`，保持原有导航行为。
+
+## Membership verification
+
+`swift test --no-parallel` covers cross-platform membership/cache rules. Use the MoreKit Xcode scheme on an iOS simulator for the existing UIKit and lifetime compatibility tests. StoreKit integration tests need an app-hosted test target: Passcord's `MembershipPurchaseTests` uses a local catalog to exercise purchase, cancellation of renewal, expiration, restore, pending approval, lifetime upgrades, and refunds without real purchases. Final release validation should also use the host app's actual App Store Connect products in Sandbox.

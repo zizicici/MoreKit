@@ -101,6 +101,8 @@ public enum MoreSectionType {
 
 public protocol MoreViewControllerDataSource: AnyObject {
     func sections(for controller: MoreViewController) -> [MoreSectionType]
+    /// Return a host-owned cell, or nil to use the standard custom row.
+    func moreViewController(_ controller: MoreViewController, cellFor item: MoreCustomItem) -> UITableViewCell?
     func moreViewController(_ controller: MoreViewController, didSelectCustomItem item: MoreCustomItem)
     func additionalReloadNotifications() -> [Notification.Name]
     /// Custom rows appended to the built-in About section. Selection uses didSelectCustomItem.
@@ -108,6 +110,10 @@ public protocol MoreViewControllerDataSource: AnyObject {
 }
 
 extension MoreViewControllerDataSource {
+    public func moreViewController(_ controller: MoreViewController, cellFor item: MoreCustomItem) -> UITableViewCell? {
+        nil
+    }
+
     public func additionalAboutItems(for controller: MoreViewController) -> [MoreCustomItem] {
         []
     }

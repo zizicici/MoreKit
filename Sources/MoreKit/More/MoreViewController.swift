@@ -44,6 +44,7 @@ public class MoreViewController: UIViewController {
     }
 
     enum Item: Hashable {
+        case manageSubscription
         case promotion(String)
         case thanks
         case custom(MoreCustomItem)
@@ -58,6 +59,8 @@ public class MoreViewController: UIViewController {
 
         var title: String {
             switch self {
+            case .manageSubscription:
+                return String(localized: "store.manageSubscription", bundle: .module)
             case .promotion, .thanks:
                 return ""
             case .custom(let item):
@@ -133,12 +136,12 @@ public class MoreViewController: UIViewController {
         configureHierarchy()
         configureDataSource()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .SettingsUpdate, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreInfoLoaded, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: .StoreProductsLoaded, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(observedDataChanged), name: .SettingsUpdate, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(observedDataChanged), name: .StoreInfoLoaded, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(observedDataChanged), name: .StoreProductsLoaded, object: nil)
 
         for name in dataSource?.additionalReloadNotifications() ?? [] {
-            NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: name, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(observedDataChanged), name: name, object: nil)
         }
 
         reloadData()
@@ -181,6 +184,16 @@ public class MoreViewController: UIViewController {
             guard let identifier = diffableDataSource.itemIdentifier(for: indexPath) else { return nil }
 
             switch identifier {
+            case .manageSubscription:
+                let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+                var content = UIListContentConfiguration.cell()
+                content.text = identifier.title
+                content.textProperties.alignment = .center
+                content.textProperties.color = MoreKitAppearance.shared.tintColor
+                cell.contentConfiguration = content
+                cell.accessibilityTraits = .button
+                return cell
+
             case .promotion(let price):
                 let cell = tableView.dequeueReusableCell(withIdentifier: "PromotionCell", for: indexPath)
                 if let promotionConfig = configuration.promotionConfig,
@@ -205,6 +218,9 @@ public class MoreViewController: UIViewController {
                 return cell
 
             case .custom(let item):
+                if let cell = self.dataSource?.moreViewController(self, cellFor: item) {
+                    return cell
+                }
                 if item.badge != nil {
                     let cell = tableView.dequeueReusableCell(withIdentifier: MoreCustomBadgeCell.reuseIdentifier, for: indexPath) as! MoreCustomBadgeCell
                     cell.configure(item: item)
@@ -267,6 +283,10 @@ public class MoreViewController: UIViewController {
 
     // MARK: - Reload
 
+    @objc nonisolated private func observedDataChanged() {
+        Task { @MainActor [weak self] in self?.reloadData() }
+    }
+
     @objc
     public func reloadData() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
@@ -309,6 +329,9 @@ public class MoreViewController: UIViewController {
 
     // MARK: - Public Methods (for DataSource to call)
 
+    /// Handle a settings error in the host app. Return false for the default alert.
+    public var settingsErrorHandler: ((UIViewController, Error) -> Bool)?
+
     public func jumpToSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         if UIApplication.shared.canOpenURL(url) {
@@ -318,6 +341,7 @@ public class MoreViewController: UIViewController {
 
     public func enterSettings<T: SettingsOption>(_ type: T.Type) {
         let vc = SettingOptionsViewController<T>()
+        vc.errorHandler = settingsErrorHandler
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: ConsideringUser.pushAnimated)
     }
@@ -335,6 +359,8 @@ public class MoreViewController: UIViewController {
         guard productID != nil else { return nil }
 
         switch proTier {
+        case .subscription:
+            return .manageSubscription
         case .lifetime:
             guard configuration.gratefulConfig != nil else { return nil }
             return .thanks
@@ -414,6 +440,8 @@ extension MoreViewController: UITableViewDelegate {
         guard let item = diffableDataSource.itemIdentifier(for: indexPath) else { return }
 
         switch item {
+        case .manageSubscription:
+            manageSubscription()
         case .promotion, .thanks:
             break
         case .custom(let customItem):
@@ -452,6 +480,18 @@ extension MoreViewController {
             return true
         case .none:
             return false
+        }
+    }
+
+    private func manageSubscription() {
+        guard let scene = view.window?.windowScene else { return }
+        Task {
+            do {
+                try await AppStore.showManageSubscriptions(in: scene)
+                await Store.shared.updateCustomerProductStatus()
+            } catch {
+                showAlert(title: String(localized: "store.orderFailure", bundle: .module), message: error.localizedDescription)
+            }
         }
     }
 
@@ -590,6 +630,7 @@ extension MoreViewController {
     }
 
     func checkAppStoreAvailability() {
+        guard !configuration.appStoreId.isEmpty else { return }
         guard let url = URL(string: "https://itunes.apple.com/lookup?id=\(configuration.appStoreId)") else { return }
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             guard let data = data,
