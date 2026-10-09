@@ -586,7 +586,13 @@ extension Store {
             if transaction.revocationDate != nil || transaction.isUpgraded {
                 fallback = .inactive
             } else if let expiration = transaction.expirationDate, expiration > Date() {
-                fallback = .active(.init(productID: productID, expirationDate: expiration))
+                // Reuse the cached entry for the same period so an offline scan keeps its renewal info
+                // instead of replacing it with a bare transaction and churning the cache.
+                if let cached = subscriptions[productID], cached.expirationDate == expiration {
+                    fallback = .active(cached)
+                } else {
+                    fallback = .active(.init(productID: productID, expirationDate: expiration))
+                }
             } else if transaction.expirationDate != nil {
                 let cachedGrace = subscriptions[productID]?.gracePeriodExpirationDate
                 fallback = cachedGrace.map { $0 > Date() } == true ? .missing : .inactive
@@ -618,8 +624,18 @@ extension Store {
                 observedInactive = true
             }
         }
-        if let best { return .active(best) }
-        return observedInactive ? .inactive : fallback
+        return Self.resolveSubscriptionScan(transaction: fallback, statusBest: best, statusObservedInactive: observedInactive)
+    }
+
+    /// Combine the signed-transaction verdict with the group-status observations. A verified, unexpired,
+    /// non-revoked transaction is positive proof of access; group status may extend it (grace period,
+    /// renewal info) but a stale `.expired`/`.revoked` status for an older period must never contradict it.
+    internal static func resolveSubscriptionScan(transaction: SubscriptionScanOutcome,
+                                                 statusBest: SubscriptionMembership?,
+                                                 statusObservedInactive: Bool) -> SubscriptionScanOutcome {
+        if let statusBest { return .active(statusBest) }
+        if case .active = transaction { return transaction }
+        return statusObservedInactive ? .inactive : transaction
     }
 
     internal func applySubscriptionOutcomes(_ outcomes: [String: SubscriptionScanOutcome], now: Date = Date()) {
@@ -655,8 +671,10 @@ extension Store {
             do { try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) }
             catch { return }
             guard let self else { return }
-            self.applySubscriptionOutcomes([:])
+            // Re-read StoreKit before pruning so a renewal that arrived while suspended extends access
+            // in one step instead of briefly clearing the cache and re-activating.
             await self.refreshSubscriptions()
+            self.applySubscriptionOutcomes([:])
         }
     }
 }

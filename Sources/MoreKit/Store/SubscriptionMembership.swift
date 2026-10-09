@@ -44,7 +44,7 @@ struct MembershipCache {
     }
 }
 
-enum SubscriptionScanOutcome {
+enum SubscriptionScanOutcome: Equatable {
     case active(SubscriptionMembership)
     case inactive
     case missing

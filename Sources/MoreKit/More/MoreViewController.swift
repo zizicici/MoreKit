@@ -529,7 +529,7 @@ extension MoreViewController {
     func restorePurchases() {
         showOverlayViewController()
         Task {
-            let alertTitle: String
+            var alertTitle: String?
             var alertMessage: String?
             var shouldReload = false
             do {
@@ -539,6 +539,8 @@ extension MoreViewController {
                 } else {
                     alertTitle = String(localized: "store.restore.noPurchases", bundle: .module)
                 }
+            } catch StoreKitError.userCancelled {
+                // Backing out of the App Store sign-in is not a failure.
             } catch {
                 alertTitle = String(localized: "store.orderFailure", bundle: .module)
                 alertMessage = error.localizedDescription
@@ -547,7 +549,9 @@ extension MoreViewController {
                 reloadData()
             }
             hideOverlayViewController { [weak self] in
-                self?.showAlert(title: alertTitle, message: alertMessage)
+                if let alertTitle {
+                    self?.showAlert(title: alertTitle, message: alertMessage)
+                }
             }
         }
     }

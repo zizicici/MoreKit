@@ -239,6 +239,23 @@ final class StoreCoreTests {
         #expect(store.proTier() == .subscription)
     }
 
+    @Test("A verified unexpired transaction is never contradicted by stale group status")
+    func transactionProofBeatsStaleStatus() {
+        let membership = subscription()
+        let grace = subscription(expires: Date().addingTimeInterval(-10), grace: Date().addingTimeInterval(100))
+        // A stale `.expired`/`.revoked` status for an older period must not clear a live period.
+        #expect(Store.resolveSubscriptionScan(transaction: .active(membership), statusBest: nil, statusObservedInactive: true)
+                == .active(membership))
+        // Status still wins when it carries more access (grace period, renewal info).
+        #expect(Store.resolveSubscriptionScan(transaction: .active(membership), statusBest: grace, statusObservedInactive: false)
+                == .active(grace))
+        // Without a live transaction, an inactive status is authoritative and a silent one keeps the fallback.
+        #expect(Store.resolveSubscriptionScan(transaction: .missing, statusBest: nil, statusObservedInactive: true) == .inactive)
+        #expect(Store.resolveSubscriptionScan(transaction: .inactive, statusBest: nil, statusObservedInactive: true) == .inactive)
+        #expect(Store.resolveSubscriptionScan(transaction: .missing, statusBest: nil, statusObservedInactive: false) == .missing)
+        #expect(Store.resolveSubscriptionScan(transaction: .inactive, statusBest: nil, statusObservedInactive: false) == .inactive)
+    }
+
     @Test("Unregistered products cannot unlock membership")
     func unrelatedProducts() {
         let store = Store()
