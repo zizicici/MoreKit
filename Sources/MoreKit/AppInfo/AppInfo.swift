@@ -24,6 +24,7 @@ public enum AppInfo {
         case campfire
         case watermelon
         case doufu
+        case passcord
 
         public var imageName: String {
             switch self {
@@ -51,6 +52,8 @@ public enum AppInfo {
                 "WatermelonIcon"
             case .doufu:
                 "DoufuIcon"
+            case .passcord:
+                "PasscordIcon"
             }
         }
 
@@ -115,6 +118,8 @@ public enum AppInfo {
                 String(localized: "app.watermelon.title", defaultValue: "Watermelon", bundle: .module)
             case .doufu:
                 String(localized: "app.doufu.title", defaultValue: "Doufu", bundle: .module)
+            case .passcord:
+                String(localized: "app.passcord.title", defaultValue: "Passcord", bundle: .module)
             }
         }
 
@@ -144,6 +149,8 @@ public enum AppInfo {
                 String(localized: "app.watermelon.subtitle", defaultValue: "Photos Backup Master", bundle: .module)
             case .doufu:
                 String(localized: "app.doufu.subtitle", defaultValue: "LLM+HTML+CSS+JS", bundle: .module)
+            case .passcord:
+                String(localized: "app.passcord.subtitle", defaultValue: "Recording Locations Lightly", bundle: .module)
             }
         }
 
@@ -173,6 +180,8 @@ public enum AppInfo {
                 "6762260596"
             case .doufu:
                 "6760194187"
+            case .passcord:
+                "6792239849"
             }
         }
 

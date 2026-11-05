@@ -9,7 +9,7 @@ import AppKit
 struct AppInfoCoreTests {
     @Test("Every app exposes metadata and a packaged image")
     func appMetadataAndImages() {
-        #expect(AppInfo.App.allCases.count == 12)
+        #expect(AppInfo.App.allCases.count == 13)
         #expect(AppInfo.App.lemon.name == "A Lemon Diary")
         #expect(AppInfo.App.lemon.subtitle == "A pure text diary")
         for app in AppInfo.App.allCases {
