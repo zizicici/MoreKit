@@ -98,6 +98,12 @@
             "state": "translated",
             "value": "完成"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gotowe"
+          }
         }
       }
     },
@@ -197,6 +203,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Гаразд"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
           }
         }
       }
@@ -298,6 +310,12 @@
             "state": "translated",
             "value": "語言"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Język"
+          }
         }
       }
     },
@@ -366,7 +384,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "について"
+            "value": "このアプリについて"
           }
         },
         "ko": {
@@ -397,6 +415,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Про додаток"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O aplikacji"
           }
         }
       }
@@ -498,6 +522,12 @@
             "state": "translated",
             "value": "EULA"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Umowa licencyjna użytkownika końcowego"
+          }
         }
       }
     },
@@ -506,7 +536,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Policy of Privacy"
+            "value": "Privacy Policy"
           }
         },
         "zh-Hans": {
@@ -524,7 +554,7 @@
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "隱私政策"
+            "value": "私隱政策"
           }
         },
         "ar": {
@@ -536,67 +566,73 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Datenschutz"
+            "value": "Datenschutzerklärung"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Privacidad"
+            "value": "Política de privacidad"
           }
         },
         "es-419": {
           "stringUnit": {
             "state": "translated",
-            "value": "Privacidad"
+            "value": "Política de privacidad"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confidentialité"
+            "value": "Politique de confidentialité"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Privacy"
+            "value": "Informativa sulla privacy"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "プライバシー"
+            "value": "プライバシーポリシー"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "개인정보"
+            "value": "개인정보 처리방침"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Privacidade"
+            "value": "Política de privacidade"
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Privacidade"
+            "value": "Política de privacidade"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Конфиденциальность"
+            "value": "Политика конфиденциальности"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Конфіденційність"
+            "value": "Політика конфіденційності"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polityka prywatności"
           }
         }
       }
@@ -606,7 +642,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Write Review"
+            "value": "Write a Review"
           }
         },
         "zh-Hans": {
@@ -697,6 +733,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Оцінити"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oceń aplikację"
           }
         }
       }
@@ -798,6 +840,12 @@
             "state": "translated",
             "value": "Поділитися"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Udostępnij aplikację"
+          }
         }
       }
     },
@@ -897,6 +945,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Версія"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informacje o wersji"
           }
         }
       }
@@ -998,6 +1052,12 @@
             "state": "translated",
             "value": "Інші додатки"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Więcej aplikacji"
+          }
         }
       }
     },
@@ -1098,6 +1158,12 @@
             "state": "translated",
             "value": "Дослідити більше"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odkryj więcej"
+          }
         }
       }
     },
@@ -1130,73 +1196,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "المساعدة في التحسين"
+            "value": "التواصل مع المطوّر"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Helfen Sie mit"
+            "value": "Entwickler kontaktieren"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ayuda a mejorar"
+            "value": "Contactar con el desarrollador"
           }
         },
         "es-419": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ayuda a mejorar"
+            "value": "Contactar al desarrollador"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aidez-nous à améliorer"
+            "value": "Contacter le développeur"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aiuta a migliorare"
+            "value": "Contatta lo sviluppatore"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "改善に協力"
+            "value": "開発者に連絡"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "개선을 도와주세요"
+            "value": "개발자에게 문의"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajude a melhorar"
+            "value": "Contatar o desenvolvedor"
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajude a melhorar"
+            "value": "Contactar o programador"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Помогите улучшить"
+            "value": "Связаться с разработчиком"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Допоможіть покращити"
+            "value": "Зв’язатися з розробником"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skontaktuj się z deweloperem"
           }
         }
       }
@@ -1298,6 +1370,12 @@
             "state": "translated",
             "value": "Ел. пошта"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-mail"
+          }
         }
       }
     },
@@ -1394,6 +1472,12 @@
           }
         },
         "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RED Note"
+          }
+        },
+        "pl": {
           "stringUnit": {
             "state": "translated",
             "value": "RED Note"
@@ -1498,6 +1582,12 @@
             "state": "translated",
             "value": "Дата виробництва"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data produkcji"
+          }
         }
       }
     },
@@ -1597,6 +1687,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Номер ICP"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numer rejestracji ICP"
           }
         }
       }
@@ -1698,6 +1794,12 @@
             "state": "translated",
             "value": "Виробник"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Producent"
+          }
         }
       }
     },
@@ -1797,6 +1899,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Назва"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nazwa"
           }
         }
       }
@@ -1898,6 +2006,12 @@
             "state": "translated",
             "value": "Видавець"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wydawca"
+          }
         }
       }
     },
@@ -1997,6 +2111,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Висловлюємо щиру подяку всім розробникам проєктів з відкритим кодом."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dziękujemy wszystkim twórcom projektów open source."
           }
         }
       }
@@ -2098,6 +2218,12 @@
             "state": "translated",
             "value": "Подяки"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podziękowania"
+          }
         }
       }
     },
@@ -2197,6 +2323,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Специфікації"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informacje o wersji"
           }
         }
       }
@@ -2298,6 +2430,12 @@
             "state": "translated",
             "value": "Версія"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wersja"
+          }
         }
       }
     },
@@ -2397,6 +2535,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Помилка перевірки транзакції."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weryfikacja transakcji nie powiodła się."
           }
         }
       }
@@ -2498,6 +2642,12 @@
             "state": "translated",
             "value": "Товари недоступні. Спробуйте ще раз."
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Produkty są niedostępne. Spróbuj ponownie."
+          }
         }
       }
     },
@@ -2542,19 +2692,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Error en pedido"
+            "value": "Error en el pedido"
           }
         },
         "es-419": {
           "stringUnit": {
             "state": "translated",
-            "value": "Error en pedido"
+            "value": "Error en el pedido"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Échec commande"
+            "value": "Échec de la commande"
           }
         },
         "it": {
@@ -2597,6 +2747,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Помилка замовлення"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transakcja nie powiodła się"
           }
         }
       }
@@ -2698,6 +2854,12 @@
             "state": "translated",
             "value": "Придбати Pro"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kup wersję Pro"
+          }
         }
       }
     },
@@ -2797,6 +2959,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Покупка очікує підтвердження"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zakup oczekuje na zatwierdzenie"
           }
         }
       }
@@ -2898,6 +3066,12 @@
             "state": "translated",
             "value": "Ваша покупка очікує схвалення й автоматично активується після підтвердження."
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twój zakup oczekuje na zatwierdzenie. Po zatwierdzeniu zostanie aktywowany automatycznie."
+          }
         }
       }
     },
@@ -2997,6 +3171,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Відновити покупку"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przywróć zakupy"
           }
         }
       }
@@ -3098,6 +3278,12 @@
             "state": "translated",
             "value": "Відновлено"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przywrócono zakupy"
+          }
         }
       }
     },
@@ -3198,6 +3384,12 @@
             "state": "translated",
             "value": "Покупки не знайдено"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie znaleziono zakupów"
+          }
         }
       }
     },
@@ -3261,7 +3453,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Календарь + Dynamic Island"
+            "value": "Календар + Dynamic Island"
           }
         },
         "zh-Hans": {
@@ -3298,6 +3490,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "캘린더 + Dynamic Island"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalendarz + Dynamic Island"
           }
         }
       }
@@ -3400,6 +3598,12 @@
             "state": "translated",
             "value": "Calendar Island"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar Island"
+          }
         }
       }
     },
@@ -3409,7 +3613,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "Welches Fest ist heute?"
           }
         },
         "en": {
@@ -3421,49 +3625,49 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "¿Qué se celebra hoy?"
           }
         },
         "es-419": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "¿Qué se celebra hoy?"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "Quelle fête célèbre-t-on aujourd’hui ?"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "今日は何の日？"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "Que data se comemora hoje?"
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "Que data se comemora hoje?"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "Какой сегодня праздник?"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "What festival is it today?"
+            "value": "Яке сьогодні свято?"
           }
         },
         "zh-Hans": {
@@ -3487,7 +3691,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "ما هو عيد اليوم؟"
+            "value": "ما المناسبة التي نحتفل بها اليوم؟"
           }
         },
         "it": {
@@ -3500,6 +3704,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘의 명절은 무엇일까요?"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jakie święto jest dzisiaj?"
           }
         }
       }
@@ -3602,6 +3812,12 @@
             "state": "translated",
             "value": "China Festivals"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "China Festivals"
+          }
         }
       }
     },
@@ -3635,7 +3851,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un journal en texte pure"
+            "value": "Un journal en texte brut"
           }
         },
         "ja": {
@@ -3647,25 +3863,25 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Um diário de texto puro"
+            "value": "Um diário só de texto"
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Um diário de texto puro"
+            "value": "Um diário apenas de texto"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Дневник в чистом тексте"
+            "value": "Простой текстовый дневник"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Щоденник у чистому тексті"
+            "value": "Простий текстовий щоденник"
           }
         },
         "zh-Hans": {
@@ -3702,6 +3918,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "순수 텍스트 일기장"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prosty dziennik tekstowy"
           }
         }
       }
@@ -3804,11 +4026,17 @@
             "state": "translated",
             "value": "A Lemon Diary"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Lemon Diary"
+          }
         }
       }
     },
     "app.moontake.subtitle": {
-      "comment": "A camera for moon",
+      "comment": "A camera for the Moon",
       "localizations": {
         "de": {
           "stringUnit": {
@@ -3819,7 +4047,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A camera for moon"
+            "value": "A camera for the Moon"
           }
         },
         "es": {
@@ -3855,7 +4083,7 @@
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uma câmera só para a Lua"
+            "value": "Uma câmara só para a Lua"
           }
         },
         "ru": {
@@ -3891,7 +4119,7 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "كاميرا لالتقاط القمر"
+            "value": "كاميرا لتصوير القمر"
           }
         },
         "it": {
@@ -3904,6 +4132,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "달을 찍는 카메라"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aparat do fotografowania Księżyca"
           }
         }
       }
@@ -3919,7 +4153,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Disable Alarms in Off Day"
+            "value": "Disable alarms on days off"
           }
         },
         "es": {
@@ -3937,7 +4171,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Désactiver les alarmes le week-end"
+            "value": "Désactiver les alarmes les jours de repos"
           }
         },
         "ja": {
@@ -4004,6 +4238,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "휴일에 알람 끄기"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wyłączaj alarmy w dni wolne"
           }
         }
       }
@@ -4106,6 +4346,12 @@
             "state": "translated",
             "value": "Off Day"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off Day"
+          }
         }
       }
     },
@@ -4157,7 +4403,7 @@
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Grade da Vida"
+            "value": "Grelha da vida"
           }
         },
         "ru": {
@@ -4206,6 +4452,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "인생 격자"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Życie w kratkach"
           }
         }
       }
@@ -4264,7 +4516,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "가볍게 기록하는 위치"
+            "value": "간편한 위치 기록"
           }
         },
         "pt-BR": {
@@ -4307,6 +4559,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "省電的位置記錄"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Energooszczędny zapis lokalizacji"
           }
         }
       }
@@ -4409,6 +4667,12 @@
             "state": "translated",
             "value": "Passcord"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passcord"
+          }
         }
       }
     },
@@ -4430,25 +4694,25 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Modo Enfoque activado"
+            "value": "Modo de concentración activado"
           }
         },
         "es-419": {
           "stringUnit": {
             "state": "translated",
-            "value": "Modo Enfoque activado"
+            "value": "Modo de concentración activado"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mode Focus activé"
+            "value": "Mode Concentration activé"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "フォーカスモード作動中"
+            "value": "集中モードをオン"
           }
         },
         "pt-BR": {
@@ -4466,13 +4730,13 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Режим фокуса включён"
+            "value": "Режим фокусирования включён"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Режим фокусу ввімкнено"
+            "value": "Режим зосередження ввімкнено"
           }
         },
         "zh-Hans": {
@@ -4484,19 +4748,19 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "專注模式，啓動"
+            "value": "專注模式，啟動"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "專注模式，啓動"
+            "value": "專注模式，啟動"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تركيز قيد التشغيل"
+            "value": "وضع التركيز مفعّل"
           }
         },
         "it": {
@@ -4509,6 +4773,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "집중 모드 켜짐"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tryb skupienia włączony"
           }
         }
       }
@@ -4611,6 +4881,12 @@
             "state": "translated",
             "value": "Air Pigeon"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Air Pigeon"
+          }
         }
       }
     },
@@ -4619,97 +4895,103 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bilder in der Dynamic Island anheften"
+            "value": "Text und Bilder in der Dynamic Island anheften"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pin Images in Dynamic Island"
+            "value": "Pin text and images in Dynamic Island"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fijar imágenes en la Dynamic Island"
+            "value": "Fijar texto e imágenes en la Dynamic Island"
           }
         },
         "es-419": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fijar imágenes en la Dynamic Island"
+            "value": "Fijar texto e imágenes en la Dynamic Island"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Épingler des images dans le Dynamic Island"
+            "value": "Épingler du texte et des images dans Dynamic Island"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dynamic Islandに画像をピン留め"
+            "value": "Dynamic Islandにテキストや画像をピン留め"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fixar imagens na Dynamic Island"
+            "value": "Fixar texto e imagens na Dynamic Island"
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fixar imagens na Dynamic Island"
+            "value": "Fixar texto e imagens na Dynamic Island"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Закреплять изображения в Dynamic Island"
+            "value": "Закрепляйте текст и изображения в Dynamic Island"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Закріплювати зображення в Dynamic Island"
+            "value": "Закріплюйте текст і зображення в Dynamic Island"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "将文本/图片钉在灵动岛上"
+            "value": "将文字和图片钉在灵动岛上"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "將文本/圖片釘在動態島上"
+            "value": "將文字與圖片釘在動態島上"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "將文本/圖片釘在動態島上"
+            "value": "將文字和圖片釘在動態島上"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تثبيت الصور في Dynamic Island"
+            "value": "ثبّت النصوص والصور في Dynamic Island"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fissa le immagini in Dynamic Island"
+            "value": "Fissa testo e immagini in Dynamic Island"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dynamic Island에 이미지 고정하기"
+            "value": "Dynamic Island에 텍스트와 이미지 고정하기"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przypinaj tekst i obrazy w Dynamic Island"
           }
         }
       }
@@ -4811,6 +5093,12 @@
             "state": "translated",
             "value": "Pin It"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin It"
+          }
         }
       }
     },
@@ -4873,7 +5161,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Додавати мітки з дня на день"
+            "value": "Додавайте мітки щодня"
           }
         },
         "zh-Hans": {
@@ -4910,6 +5198,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "하루하루 태그 추가하기"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dodawaj tagi każdego dnia"
           }
         }
       }
@@ -5007,6 +5301,12 @@
           }
         },
         "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag Day"
+          }
+        },
+        "pl": {
           "stringUnit": {
             "state": "translated",
             "value": "Tag Day"
@@ -5112,6 +5412,12 @@
             "state": "translated",
             "value": "篝火"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Campfire"
+          }
         }
       }
     },
@@ -5212,6 +5518,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "寫了說了，一切都燒了"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pisz, mów i spal to wszystko"
           }
         }
       }
@@ -5314,11 +5626,17 @@
             "state": "translated",
             "value": "西瓜備份"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watermelon"
+          }
         }
       }
     },
     "app.watermelon.subtitle": {
-      "comment": "Photos Backup Master",
+      "comment": "Photo Backup Master",
       "localizations": {
         "ar": {
           "stringUnit": {
@@ -5335,7 +5653,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Photos Backup Master"
+            "value": "Photo Backup Master"
           }
         },
         "es": {
@@ -5414,6 +5732,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "照片備份大師"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mistrz kopii zapasowych zdjęć"
           }
         }
       }
@@ -5516,6 +5840,12 @@
             "state": "translated",
             "value": "豆腐"
           }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doufu"
+          }
         }
       }
     },
@@ -5613,6 +5943,12 @@
           }
         },
         "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LLM+HTML+CSS+JS"
+          }
+        },
+        "pl": {
           "stringUnit": {
             "state": "translated",
             "value": "LLM+HTML+CSS+JS"
@@ -5716,6 +6052,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "管理訂閱"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zarządzaj subskrypcją"
           }
         }
       }

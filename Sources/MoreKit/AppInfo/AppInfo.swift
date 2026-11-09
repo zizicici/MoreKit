@@ -128,7 +128,7 @@ public enum AppInfo {
             case .lemon:
                 String(localized: "app.lemon.subtitle", defaultValue: "A pure text diary", bundle: .module)
             case .moontake:
-                String(localized: "app.moontake.subtitle", defaultValue: "A camera for moon", bundle: .module)
+                String(localized: "app.moontake.subtitle", defaultValue: "A camera for the Moon", bundle: .module)
             case .coconut:
                 String(localized: "app.coconut.subtitle", defaultValue: "Calendar + Dynamic Island", bundle: .module)
             case .festivals:
@@ -138,15 +138,15 @@ public enum AppInfo {
             case .one:
                 String(localized: "app.one.subtitle", defaultValue: "Life Grid", bundle: .module)
             case .offDay:
-                String(localized: "app.offDay.subtitle", defaultValue: "Disable Alarms in Off Day", bundle: .module)
+                String(localized: "app.offDay.subtitle", defaultValue: "Disable alarms on days off", bundle: .module)
             case .tagDay:
                 String(localized: "app.tagDay.subtitle", defaultValue: "Add Tags Day by Day", bundle: .module)
             case .pin:
-                String(localized: "app.pin.subtitle", defaultValue: "Pin Images in Dynamic Island", bundle: .module)
+                String(localized: "app.pin.subtitle", defaultValue: "Pin text and images in Dynamic Island", bundle: .module)
             case .campfire:
                 String(localized: "app.campfire.subtitle", defaultValue: "Write, Talk and Burn them all", bundle: .module)
             case .watermelon:
-                String(localized: "app.watermelon.subtitle", defaultValue: "Photos Backup Master", bundle: .module)
+                String(localized: "app.watermelon.subtitle", defaultValue: "Photo Backup Master", bundle: .module)
             case .doufu:
                 String(localized: "app.doufu.subtitle", defaultValue: "LLM+HTML+CSS+JS", bundle: .module)
             case .passcord:
